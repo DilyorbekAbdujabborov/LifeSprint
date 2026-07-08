@@ -1,0 +1,85 @@
+import { Router, Response } from "express";
+import db from './db.js';
+import { authMiddleware, AuthedRequest } from './auth.js';
+import { handleReward } from './engine.js';
+
+const router = Router();
+
+async function loadRaw(userId: number): Promise<any> {
+  const row = await db.get("SELECT state FROM user_state WHERE user_id = $1", [userId]) as any;
+  return row ? typeof row.state === "string" ? JSON.parse(row.state) : row.state : {};
+}
+
+async function saveRaw(userId: number, state: any) {
+  const json = JSON.stringify(state);
+  await db.run(
+    `INSERT INTO user_state (user_id, state, updated_at)
+     VALUES ($1, $2, NOW())
+     ON CONFLICT (user_id) DO UPDATE SET state = $2, updated_at = NOW()`,
+    [userId, json]
+  );
+}
+
+router.post("/reward", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { action, payload } = req.body;
+  if (!action) {
+    return res.status(400).json({ error: "action talab qilinadi." });
+  }
+  await handleReward(req, res, action, payload || {});
+});
+
+router.post("/publish-course", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { course } = req.body;
+  if (!course || !course.title) {
+    return res.status(400).json({ error: "Kurs ma'lumotlari to'liq emas." });
+  }
+  const state = await loadRaw(req.userId!);
+  const courses = state.courses || [];
+  courses.unshift(course);
+  state.courses = courses;
+  await saveRaw(req.userId!, state);
+  res.json({ course, courses });
+});
+
+router.post("/create-group", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { group } = req.body;
+  if (!group || !group.name) {
+    return res.status(400).json({ error: "Guruh ma'lumotlari to'liq emas." });
+  }
+  const state = await loadRaw(req.userId!);
+  const groups = state.groups || [];
+  groups.unshift(group);
+  state.groups = groups;
+  await saveRaw(req.userId!, state);
+  res.json({ group, groups });
+});
+
+router.post("/send-message", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { groupId, message } = req.body;
+  if (!groupId || !message) {
+    return res.status(400).json({ error: "Xabar ma'lumotlari to'liq emas." });
+  }
+  const state = await loadRaw(req.userId!);
+  const chats = state.groupChats || {};
+  const groupChat = chats[groupId] || [];
+  groupChat.push(message);
+  chats[groupId] = groupChat;
+  state.groupChats = chats;
+  await saveRaw(req.userId!, state);
+  res.json({ ok: true, messages: groupChat });
+});
+
+router.post("/issue-certificate", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { certificate } = req.body;
+  if (!certificate || !certificate.studentName) {
+    return res.status(400).json({ error: "Sertifikat ma'lumotlari to'liq emas." });
+  }
+  const state = await loadRaw(req.userId!);
+  const certs = state.certificates || [];
+  certs.unshift(certificate);
+  state.certificates = certs;
+  await saveRaw(req.userId!, state);
+  res.json({ certificate, certificates: certs });
+});
+
+export default router;

@@ -1,0 +1,213 @@
+@import "../data/design-tokens.css";
+
+@variant dark (&:where(.dark, .dark *));
+
+/*
+  Body gradient overlays — adds ambient color glow on top of design-tokens base.
+  These merge with the bg via compositing, not override.
+*/
+@layer base {
+  body {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.10), transparent 32%),
+      radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.07), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 28%),
+      var(--bg);
+  }
+
+  html.dark body {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(96, 165, 250, 0.08), transparent 32%),
+      radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.05), transparent 26%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 24%),
+      var(--bg);
+  }
+}
+
+/*
+ * Sidebar theme — CSS custom properties so Navigation.tsx can use
+ * `var(--sidebar-*)` instead of hardcoded white/gray values.
+ */
+@layer base {
+  :root {
+    --sidebar-bg: linear-gradient(135deg, #c7d2fe 0%, #dde4ff 45%, #eef2ff 100%);
+    --sidebar-border: rgba(99, 102, 241, 0.14);
+    --sidebar-text: #1e1b4b;
+    --sidebar-text-muted: #3730a3;
+    --sidebar-text-subtle: #6366f1;
+    --sidebar-icon: #818cf8;
+    --sidebar-section-title: #a5b4fc;
+    --sidebar-nav-hover-bg: rgba(99, 102, 241, 0.09);
+    --sidebar-overlay: rgba(0, 0, 0, 0.40);
+    --sidebar-shadow: 0 20px 50px rgba(99, 102, 241, 0.10);
+    --sidebar-logo-bg: rgba(255, 255, 255, 0.5);
+    --sidebar-logo-inner-bg: #eef2ff;
+    --sidebar-logo-inner-border: rgba(99, 102, 241, 0.15);
+    --sidebar-logo-text: #1e1b4b;
+    --sidebar-accent: #4f46e5;
+    --sidebar-badge-bg: rgba(99, 102, 241, 0.10);
+    --sidebar-badge-border: rgba(99, 102, 241, 0.14);
+    --sidebar-badge-text: #3730a3;
+  }
+
+  html.dark {
+    --sidebar-bg: rgba(8, 16, 31, 0.96);
+    --sidebar-border: rgba(148, 163, 184, 0.14);
+    --sidebar-text: #e2e8f0;
+    --sidebar-text-muted: #94a3b8;
+    --sidebar-text-subtle: #64748b;
+    --sidebar-icon: rgba(255, 255, 255, 0.5);
+    --sidebar-section-title: rgba(255, 255, 255, 0.40);
+    --sidebar-nav-hover-bg: rgba(255, 255, 255, 0.08);
+    --sidebar-overlay: rgba(0, 0, 0, 0.60);
+    --sidebar-shadow: 0 20px 50px rgba(2, 6, 23, 0.35);
+    --sidebar-logo-bg: rgba(255, 255, 255, 0.05);
+    --sidebar-logo-inner-bg: rgba(15, 23, 42, 0.8);
+    --sidebar-logo-inner-border: rgba(255, 255, 255, 0.10);
+    --sidebar-logo-text: #ffffff;
+    --sidebar-accent: #38bdf8;
+    --sidebar-badge-bg: rgba(255, 255, 255, 0.10);
+    --sidebar-badge-border: rgba(255, 255, 255, 0.10);
+    --sidebar-badge-text: rgba(255, 255, 255, 0.80);
+  }
+}
+
+@layer components {
+  .app-shell {
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 28%),
+      radial-gradient(circle at top right, rgba(20, 184, 166, 0.10), transparent 24%),
+      var(--bg);
+    color: var(--text);
+  }
+
+  .app-sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    box-shadow: var(--sidebar-shadow);
+    backdrop-filter: blur(20px);
+    color: var(--sidebar-text);
+  }
+
+  .app-header {
+    background: rgba(255, 255, 255, 0.82);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+  }
+
+  html.dark .app-header {
+    background: rgba(7, 13, 25, 0.82);
+  }
+
+  .app-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .app-panel-soft {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .app-nav-item {
+    min-height: 44px;
+    border-radius: 1rem;
+    padding: 0.75rem 0.95rem;
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .app-nav-item:hover {
+    transform: translateY(-1px);
+  }
+
+  .app-nav-item-active {
+    background: var(--brand);
+    color: var(--brand-contrast);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .app-section-title {
+    color: rgba(255, 255, 255, 0.42);
+    letter-spacing: 0.28em;
+    font-size: 0.66rem;
+    font-weight: 900;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .backdrop-blur-xs {
+    backdrop-filter: blur(4px);
+  }
+
+  .shadow-2xs {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  }
+
+  html.dark .shadow-2xs {
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.45);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.45);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  html.dark .scrollbar-thin {
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+
+  html.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in {
+      animation: none;
+    }
+  }
+}
