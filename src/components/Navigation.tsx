@@ -17,7 +17,8 @@ import {
   Sparkles,
   ChevronDown,
   ShoppingCart,
-  Gamepad
+  Gamepad,
+  Users
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -70,6 +71,7 @@ export default function Navigation({
       items: [
         { id: 'portfolio', label: 'Portfolio & Rezyume', icon: UserCheck },
         { id: 'ai', label: 'Sun\'iy Intellekt', icon: Cpu },
+        { id: 'community', label: 'Jamoa & Ijtimoiy', icon: Users },
         { id: 'analytics', label: 'Tahlillar', icon: BarChart3 },
         { id: 'panels', label: 'Boshqaruv Paneli (Settings)', icon: Settings }
       ]
@@ -79,7 +81,7 @@ export default function Navigation({
   const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({
     reyting: currentTab === 'competition' || currentTab === 'discipline',
     konsultatsiya: currentTab === 'consulting' || currentTab === 'university',
-    asboblar: currentTab === 'portfolio' || currentTab === 'ai' || currentTab === 'analytics' || currentTab === 'panels',
+    asboblar: currentTab === 'portfolio' || currentTab === 'ai' || currentTab === 'community' || currentTab === 'analytics' || currentTab === 'panels',
   });
 
   const toggleSection = (sectionKey: string) => {
@@ -94,7 +96,7 @@ export default function Navigation({
       setOpenSections(prev => ({ ...prev, reyting: true }));
     } else if (currentTab === 'consulting' || currentTab === 'university') {
       setOpenSections(prev => ({ ...prev, konsultatsiya: true }));
-    } else if (currentTab === 'portfolio' || currentTab === 'ai' || currentTab === 'analytics' || currentTab === 'panels') {
+    } else if (currentTab === 'portfolio' || currentTab === 'ai' || currentTab === 'community' || currentTab === 'analytics' || currentTab === 'panels') {
       setOpenSections(prev => ({ ...prev, asboblar: true }));
     }
   }, [currentTab]);
