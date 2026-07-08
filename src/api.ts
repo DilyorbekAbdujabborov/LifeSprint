@@ -105,6 +105,13 @@ export function enrollCourse(courseId: string) {
   });
 }
 
+export function getAiRecommendations(context: string) {
+  return request<{ recommendations: string }>('/api/gemini/recommendations', {
+    method: 'POST',
+    body: JSON.stringify({ context }),
+  });
+}
+
 export function createGroup(group: any) {
   return request<{ group: any; groups: any[] }>('/api/actions/create-group', {
     method: 'POST',

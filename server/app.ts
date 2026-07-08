@@ -60,4 +60,32 @@ app.post("/api/gemini/analyze", async (req, res) => {
   }
 });
 
+app.post("/api/gemini/recommendations", async (req, res) => {
+  if (!ai) {
+    return res.status(500).json({ error: "Gemini API key is not configured on the server." });
+  }
+
+  const { context } = req.body;
+
+  try {
+    const prompt = `Quyidagi o'quvchi konteksti asosida 3-5 ta qisqa tavsiya bering:
+${context}
+
+Javob formati: "1. [Tavsiya]. 2. [Tavsiya]" shaklida bo'lsin. O'zbek tilida.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+      config: {
+        systemInstruction: "Siz LifeSprint platformasining ta'lim AI mushavarasi. Qisqa, foydali va motivatsiyovorli tavsiyalar bering. O'zbek tilida."
+      }
+    });
+
+    res.json({ recommendations: response.text });
+  } catch (error: any) {
+    console.error("Gemini API Error:", error);
+    res.status(500).json({ error: error.message || "Tavsiyalarni olishda xatolik yuz berdi." });
+  }
+});
+
 export default app;
