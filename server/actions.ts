@@ -82,4 +82,21 @@ router.post("/issue-certificate", authMiddleware, async (req: AuthedRequest, res
   res.json({ certificate, certificates: certs });
 });
 
+router.post("/enroll-course", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const { courseId } = req.body;
+  if (!courseId) {
+    return res.status(400).json({ error: "Kurs ID talab qilinadi." });
+  }
+  const state = await loadRaw(req.userId!);
+  const courses = state.courses || [];
+  const course = courses.find((c: any) => c.id === courseId);
+  if (!course) {
+    return res.status(404).json({ error: "Kurs topilmadi." });
+  }
+  course.enrolled = true;
+  state.courses = courses;
+  await saveRaw(req.userId!, state);
+  res.json({ ok: true });
+});
+
 export default router;

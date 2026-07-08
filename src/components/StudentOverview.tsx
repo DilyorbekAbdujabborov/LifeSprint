@@ -13,14 +13,16 @@ interface Props {
   onEnterGroup: (groupId: string) => void;
   triggerStatus: (msg: string) => void;
   isDarkMode: boolean;
+  setCourses?: (v: Course[] | ((prev: Course[]) => Course[])) => void;
 }
 
 export default function StudentOverview({
-  xp, coins, level, user, studentGroups, groups,
+  xp, coins, level, user, studentGroups, groups, courses,
   setXp, setLevel, setGroups, setCoins,
-  onNavigate, onEnterGroup, triggerStatus, isDarkMode
+  onNavigate, onEnterGroup, triggerStatus, isDarkMode, setCourses
 }: Props) {
   const userDisplayName = user?.name || 'Biloliddin';
+  const enrolledCourses = courses.filter((c) => c.enrolled);
 
   return (
     <div className="space-y-6">
@@ -60,10 +62,45 @@ export default function StudentOverview({
         ))}
       </div>
 
+      {/* My Enrolled Courses */}
+      {enrolledCourses.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Sotib olgan kurslarim</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {enrolledCourses.map((course) => (
+              <div key={course.id} className={`p-5 rounded-2xl border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+                course.color === 'purple' ? 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800' :
+                course.color === 'blue' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' :
+                'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'
+              }`}>
+                <div className="flex justify-between items-start gap-3 mb-3">
+                  <div>
+                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">{course.title}</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{course.teacherName}</p>
+                  </div>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    course.color === 'purple' ? 'bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200' :
+                    course.color === 'blue' ? 'bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200' :
+                    'bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                  }`}>Faol</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 mb-3">{course.description}</p>
+                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-slate-400 mt-3">
+                  <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                    ⭐ {course.rating.toFixed(1)} ({course.ratingCount})
+                  </span>
+                  <span className="font-semibold">{course.duration}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* My Groups */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Mening darslarim va faol guruhlarim</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Mening faol guruhlarim</h2>
         </div>
         {studentGroups.length === 0 ? (
           <div className="p-12 text-center bg-white dark:bg-[#151433] border border-dashed border-gray-200 dark:border-slate-800 rounded-3xl space-y-4">

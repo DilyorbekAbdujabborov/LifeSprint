@@ -37,17 +37,26 @@ export default function Dashboard({
   const studentGroups = groups.filter((g) => g.students.includes(user?.name || 'Biloliddin Akramov'));
   const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(user?.name || 'Biloliddin Akramov'));
 
-  const handleBuyCourse = (course: Course) => {
+  const handleBuyCourse = async (course: Course) => {
+    if (course.enrolled) { triggerStatus('Siz ushbu kursga allaqachon a\'zo bo\'lgansiz!'); return; }
     if (coins < course.priceCoins) { triggerStatus(`Tanga yetarli emas! Yana ${course.priceCoins - coins} tanga kerak.`); return; }
-    api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
-    setCourses((prev) => prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c)));
-    const studentName = user?.name || 'Biloliddin Akramov';
-    setGroups((prev) => prev.map((g) => {
-      if (g.courseId === course.id && !g.students.includes(studentName)) {
-        return { ...g, students: [...g.students, studentName], studentsCount: g.studentsCount + 1 };
-      }
-      return g;
-    }));
+
+    try {
+      api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
+      await api.enrollCourse(course.id);
+
+      setCourses((prev) => prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c)));
+      const studentName = user?.name || 'Biloliddin Akramov';
+      setGroups((prev) => prev.map((g) => {
+        if (g.courseId === course.id && !g.students.includes(studentName)) {
+          return { ...g, students: [...g.students, studentName], studentsCount: g.studentsCount + 1 };
+        }
+        return g;
+      }));
+      triggerStatus(`Tabriklaymiz! "${course.title}" kursiga qo'shildingiz!`);
+    } catch (err) {
+      triggerStatus('Xato: Kurs sotib olishda muammo yuz berdi.');
+    }
   };
 
   const studentTabs = [
@@ -93,7 +102,7 @@ export default function Dashboard({
               xp={xp} coins={coins} level={level} user={user}
               studentGroups={studentGroups} groups={groups} courses={courses}
               setXp={setXp} setCoins={setCoins} setLevel={setLevel}
-              setGroups={setGroups}
+              setGroups={setGroups} setCourses={setCourses}
               onNavigate={(tab) => setStudentTab(tab as any)}
               onEnterGroup={(id) => { setActiveGroupId(id); setStudentTab('groups'); }}
               triggerStatus={triggerStatus} isDarkMode={isDarkMode}

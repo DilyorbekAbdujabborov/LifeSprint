@@ -98,6 +98,13 @@ export function publishCourse(course: any) {
   });
 }
 
+export function enrollCourse(courseId: string) {
+  return request<{ ok: boolean }>('/api/actions/enroll-course', {
+    method: 'POST',
+    body: JSON.stringify({ courseId }),
+  });
+}
+
 export function createGroup(group: any) {
   return request<{ group: any; groups: any[] }>('/api/actions/create-group', {
     method: 'POST',
