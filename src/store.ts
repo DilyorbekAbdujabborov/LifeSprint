@@ -63,6 +63,7 @@ interface AppState {
   setTitleDefs: (v: TitleDef[]) => void;
   setNewAchievements: (v: GameAchievement[]) => void;
   setNewTitles: (v: TitleDef[]) => void;
+  setDarkMode: (v: boolean) => void;
   toggleDarkMode: () => void;
   setShowLevelModal: (v: boolean) => void;
   setLevelModalTab: (v: 'sat' | 'ielts' | 'milliy' | 'quiz' | 'xp' | 'liga') => void;
@@ -138,6 +139,7 @@ export const useStore = create<AppState>((set, get) => ({
   setTitleDefs: (v) => set({ titleDefs: v }),
   setNewAchievements: (v) => set({ newAchievements: v }),
   setNewTitles: (v) => set({ newTitles: v }),
+  setDarkMode: (v: boolean) => set({ isDarkMode: v }),
   toggleDarkMode: () => {
     // ThemeProvider listens to store changes and syncs DOM + localStorage
     set((s) => ({ isDarkMode: !s.isDarkMode }));

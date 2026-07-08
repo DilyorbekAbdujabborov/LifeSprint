@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const store = useStore.getState();
     if (store.isDarkMode !== isDark) {
-      store.set({ isDarkMode: isDark });
+      store.setDarkMode(isDark);
     }
   }, []);
 
@@ -60,7 +60,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         persistTheme(sysDark ? 'dark' : 'light');
         const store = useStore.getState();
         if (store.isDarkMode !== sysDark) {
-          store.set({ isDarkMode: sysDark });
+          store.setDarkMode(sysDark);
         }
       }
     };
@@ -82,13 +82,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const toggleTheme = useCallback(() => {
     const next = !useStore.getState().isDarkMode;
-    useStore.getState().set({ isDarkMode: next });
+    useStore.getState().setDarkMode(next);
     // DOM + localStorage sync happens via subscribe above
   }, []);
 
   const setTheme = useCallback((t: Theme) => {
     const next = t === 'dark';
-    useStore.getState().set({ isDarkMode: next });
+    useStore.getState().setDarkMode(next);
   }, []);
 
   const theme = useStore((s) => s.isDarkMode ? 'dark' : 'light');
