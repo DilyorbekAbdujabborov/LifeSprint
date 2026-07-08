@@ -172,9 +172,19 @@ export const useStore = create<AppState>((set, get) => ({
           certificates: s.certificates && s.certificates.length > 0 ? s.certificates : DEFAULT_CERTIFICATES,
           portfolio: s.portfolio ?? DEFAULT_PORTFOLIO,
           posts: s.posts && s.posts.length > 0 ? s.posts : DEFAULT_POSTS,
-          leaderboard: s.leaderboard && s.leaderboard.length > 0 ? s.leaderboard : DEFAULT_LEADERBOARD,
+          leaderboard: s.leaderboard && s.leaderboard.length > 0 ? s.leaderboard : [],
           events: s.events && s.events.length > 0 ? s.events : DEFAULT_EVENTS,
         });
+      }
+
+      // Load real leaderboard from backend
+      try {
+        const lbRes = await api.request<{ leaderboard: any[] }>('/api/game/leaderboard');
+        if (lbRes.leaderboard) {
+          set({ leaderboard: lbRes.leaderboard });
+        }
+      } catch {
+        // Fallback to current leaderboard if API fails
       }
     } catch {
       set({
@@ -182,7 +192,7 @@ export const useStore = create<AppState>((set, get) => ({
         courses: DEFAULT_COURSES, groups: DEFAULT_GROUPS,
         consultations: DEFAULT_CONSULTATIONS, certificates: DEFAULT_CERTIFICATES,
         portfolio: DEFAULT_PORTFOLIO, posts: DEFAULT_POSTS,
-        leaderboard: DEFAULT_LEADERBOARD, events: DEFAULT_EVENTS,
+        leaderboard: [], events: DEFAULT_EVENTS,
       });
     } finally {
       set({ loaded: true, loading: false });

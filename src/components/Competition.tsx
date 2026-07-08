@@ -59,15 +59,57 @@ export default function Competition({ xp, setXp, setLevel, isDarkMode }: Competi
   const [studentsLoading, setStudentsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/mock/competition')
-      .then(res => res.json())
+    // Fetch real leaderboard data from backend
+    api.request<{ leaderboard: any[] }>('/api/game/leaderboard')
       .then(data => {
-        setDiamondStudents(data.diamondStudents || []);
-        setGoldStudents(data.goldStudents || []);
-        setBronzeStudents(data.bronzeStudents || []);
+        if (data.leaderboard) {
+          // Separate into leagues based on XP
+          const sorted = [...data.leaderboard].sort((a, b) => b.xp - a.xp);
+          const third = Math.ceil(sorted.length / 3);
+          setDiamondStudents(sorted.slice(0, third).map(u => ({
+            name: u.name,
+            school: 'LifeSprint Student',
+            xp: u.xp,
+            sat: 0,
+            ielts: 0,
+            milliy: 0,
+            quiz: 0,
+            avatar: ''
+          })));
+          setGoldStudents(sorted.slice(third, third * 2).map(u => ({
+            name: u.name,
+            school: 'LifeSprint Student',
+            xp: u.xp,
+            sat: 0,
+            ielts: 0,
+            milliy: 0,
+            quiz: 0,
+            avatar: ''
+          })));
+          setBronzeStudents(sorted.slice(third * 2).map(u => ({
+            name: u.name,
+            school: 'LifeSprint Student',
+            xp: u.xp,
+            sat: 0,
+            ielts: 0,
+            milliy: 0,
+            quiz: 0,
+            avatar: ''
+          })));
+        }
         setStudentsLoading(false);
       })
-      .catch(() => setStudentsLoading(false));
+      .catch(() => {
+        // Fallback to mock if API fails
+        fetch('/api/mock/competition')
+          .then(res => res.json())
+          .then(data => {
+            setDiamondStudents(data.diamondStudents || []);
+            setGoldStudents(data.goldStudents || []);
+            setBronzeStudents(data.bronzeStudents || []);
+          })
+          .finally(() => setStudentsLoading(false));
+      });
   }, []);
 
   // Retrieve current active pool
