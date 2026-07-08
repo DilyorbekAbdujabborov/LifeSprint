@@ -47,12 +47,51 @@ export default function Dashboard({
 
       setCourses((prev) => prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c)));
       const studentName = user?.name || 'Biloliddin Akramov';
-      setGroups((prev) => prev.map((g) => {
-        if (g.courseId === course.id && !g.students.includes(studentName)) {
-          return { ...g, students: [...g.students, studentName], studentsCount: g.studentsCount + 1 };
+
+      setGroups((prev) => {
+        // Check if group exists for this course
+        const existingGroup = prev.find((g) => g.courseId === course.id);
+
+        if (existingGroup && !existingGroup.students.includes(studentName)) {
+          // Add student to existing group
+          return prev.map((g) => {
+            if (g.courseId === course.id) {
+              return {
+                ...g,
+                students: [...g.students, studentName],
+                pendingStudents: [...g.pendingStudents, studentName],
+                studentsCount: g.studentsCount + 1
+              };
+            }
+            return g;
+          });
+        } else if (!existingGroup) {
+          // Create new group for this course
+          const newGroup: typeof groups[0] = {
+            id: `g_${Date.now()}`,
+            name: `${course.title} Group`,
+            teacherName: course.teacherName,
+            courseTitle: course.title,
+            courseId: course.id,
+            studentsCount: 1,
+            students: [studentName],
+            pendingStudents: [studentName],
+            courseDays: [],
+            courseTime: '',
+            rating: course.rating,
+            progress: 0,
+            lessons: [],
+            homeworks: [],
+            quizzes: [],
+            tests: [],
+            announcements: [],
+            files: [],
+          };
+          return [...prev, newGroup];
         }
-        return g;
-      }));
+
+        return prev;
+      });
       triggerStatus(`Tabriklaymiz! "${course.title}" kursiga qo'shildingiz!`);
     } catch (err) {
       triggerStatus('Xato: Kurs sotib olishda muammo yuz berdi.');

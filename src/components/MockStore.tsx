@@ -78,19 +78,45 @@ export default function MockStore({
 
 				// Add to group (both students and pending so it shows in "Mening darslarim")
 				const studentName = 'Biloliddin Akramov';
-				setGroups((prev) =>
-					prev.map((g) => {
-						if (g.courseId === course.id) {
-							return {
-								...g,
-								students: g.students.includes(studentName) ? g.students : [...g.students, studentName],
-								studentsCount: g.students.includes(studentName) ? g.studentsCount : g.studentsCount + 1,
-								pendingStudents: g.pendingStudents.includes(studentName) ? g.pendingStudents : [...g.pendingStudents, studentName],
-							};
-						}
-						return g;
-					})
-				);
+				setGroups((prev) => {
+					const existingGroup = prev.find((g) => g.courseId === course.id);
+					if (existingGroup && !existingGroup.students.includes(studentName)) {
+						return prev.map((g) => {
+							if (g.courseId === course.id) {
+								return {
+									...g,
+									students: [...g.students, studentName],
+									pendingStudents: [...g.pendingStudents, studentName],
+									studentsCount: g.studentsCount + 1,
+								};
+							}
+							return g;
+						});
+					} else if (!existingGroup) {
+						const newGroup = {
+							id: `g_${Date.now()}`,
+							name: `${course.title} Guruh`,
+							teacherName: course.teacherName,
+							courseTitle: course.title,
+							courseId: course.id,
+							studentsCount: 1,
+							students: [studentName],
+							pendingStudents: [studentName],
+							courseDays: [],
+							courseTime: '',
+							rating: course.rating,
+							progress: 0,
+							lessons: [],
+							homeworks: [],
+							quizzes: [],
+							tests: [],
+							announcements: [],
+							files: [],
+						};
+						return [...prev, newGroup];
+					}
+					return prev;
+				});
 
 			api.rewardAndUpdate(setXp, null, setLevel, 'grant_enrollment');
 			triggerStatus(
@@ -108,19 +134,45 @@ export default function MockStore({
 
 		// Add to group (both students and pending so it shows in "Mening darslarim")
 		const studentName = 'Biloliddin Akramov';
-		setGroups((prev) =>
-			prev.map((g) => {
-				if (g.courseId === course.id) {
-					return {
-						...g,
-						students: g.students.includes(studentName) ? g.students : [...g.students, studentName],
-						studentsCount: g.students.includes(studentName) ? g.studentsCount : g.studentsCount + 1,
-						pendingStudents: g.pendingStudents.includes(studentName) ? g.pendingStudents : [...g.pendingStudents, studentName],
-					};
-				}
-				return g;
-			})
-		);
+		setGroups((prev) => {
+			const existingGroup = prev.find((g) => g.courseId === course.id);
+			if (existingGroup && !existingGroup.students.includes(studentName)) {
+				return prev.map((g) => {
+					if (g.courseId === course.id) {
+						return {
+							...g,
+							students: [...g.students, studentName],
+							pendingStudents: [...g.pendingStudents, studentName],
+							studentsCount: g.studentsCount + 1,
+						};
+					}
+					return g;
+				});
+			} else if (!existingGroup) {
+				const newGroup = {
+					id: `g_${Date.now()}`,
+					name: `${course.title} Guruh`,
+					teacherName: course.teacherName,
+					courseTitle: course.title,
+					courseId: course.id,
+					studentsCount: 1,
+					students: [studentName],
+					pendingStudents: [studentName],
+					courseDays: [],
+					courseTime: '',
+					rating: course.rating,
+					progress: 0,
+					lessons: [],
+					homeworks: [],
+					quizzes: [],
+					tests: [],
+					announcements: [],
+					files: [],
+				};
+				return [...prev, newGroup];
+			}
+			return prev;
+		});
 
 		triggerStatus(
 			`Tabriklaymiz! "${course.title}" kursi muvaffaqiyatli xarid qilindi!`

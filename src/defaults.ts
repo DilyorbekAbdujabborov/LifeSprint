@@ -34,7 +34,7 @@ export const DEFAULT_GROUPS: Group[] = [
   {
     id: "g2", name: "IELTS Prep Alpha Group", teacherName: "Shahnoza Tursunaliyeva",
     courseTitle: "Ingliz Tili: IELTS Prep (A1 dan B2)", courseId: "c2",
-    studentsCount: 0, students: [], pendingStudents: [], courseDays: [], courseTime: "",
+    studentsCount: 1, students: ["Biloliddin Akramov"], pendingStudents: ["Biloliddin Akramov"], courseDays: [], courseTime: "",
     rating: 4.8, progress: 0,
     lessons: [
       { id: "l2-1", title: "IELTS imtihon formati va Listening strategiyalari", duration: "1 soat 15 daqiqa", date: "2026-07-01", completed: false },
