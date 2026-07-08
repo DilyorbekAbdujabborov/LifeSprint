@@ -26,40 +26,76 @@ export default function StudentOverview({
 
   return (
     <div className="space-y-6">
-      {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-4 sm:p-8 rounded-2xl sm:rounded-3xl text-white shadow-md relative overflow-hidden">
-        <div className="absolute top-0 right-0 translate-x-12 -translate-y-6 w-64 h-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative z-10 space-y-3">
-          <span className="text-[10px] font-extrabold tracking-widest bg-black/25 px-3 py-1 rounded-full uppercase">KOSMIK TA'LIM EKOTIZIMI</span>
-          <h1 className="text-2xl sm:text-4xl font-bold">Salom, {userDisplayName}!</h1>
-          <p className="text-xs sm:text-sm text-purple-100 max-w-xl">
-            Kunlik challengeni bajarib qo'shimcha tangalarni yutib oling!
+      {/* Hero Banner - Gradient with multiple colors */}
+      <div className="relative bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 p-4 sm:p-8 rounded-3xl text-white shadow-lg overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-pink-400/20 blur-3xl" />
+        <div className="relative z-10 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 bg-white/20 backdrop-blur rounded-full text-white font-bold text-xs tracking-widest">🚀 AI TA'LIM 2.0</div>
+            <Sparkles className="w-5 h-5 text-yellow-200 animate-pulse" />
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black">Salom, {userDisplayName}!</h1>
+          <p className="text-sm sm:text-base text-white/90 max-w-2xl leading-relaxed font-medium">
+            🎯 Kunlik vazifalarni bajarib, XP yutib, yangi skilllar egasini bo'l! AI Murabbiyingiz hamma vaqt tayyor.
           </p>
-          <div className="flex flex-wrap gap-2 pt-2">
-            <span className="text-[10px] bg-white/15 px-3 py-1.5 rounded-xl font-bold">Joriy reyting: 4-o'rin</span>
-            <span className="text-[10px] bg-white/15 px-3 py-1.5 rounded-xl font-bold"><Flame className="w-3.5 h-3.5 inline fill-current" /> Streak: {level} kunlik zanjir</span>
+          <div className="flex flex-wrap gap-3 pt-4">
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl font-bold text-sm">
+              <Trophy className="w-4 h-4" /> Reyting: 4-o'rin
+            </div>
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl font-bold text-sm">
+              <Flame className="w-4 h-4 text-orange-300 fill-current" /> {level} kunlik streak
+            </div>
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl font-bold text-sm">
+              ⭐ Premium Akses
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats row */}
+      {/* Stats row - Gradient Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { value: xp, label: "Umumiy ball (XP)", color: "purple", icon: Trophy },
-          { value: coins, label: "Tangalar balansi", color: "amber", icon: Sparkles },
-          { value: `${studentGroups.length} ta`, label: "O'quv guruhlarim", color: "emerald", icon: Users },
-          { value: `${level} kun`, label: "Intizom streak", color: "rose", icon: Flame },
+          { value: xp, label: "Umumiy XP", color: "from-purple-500 to-indigo-500", textColor: "text-purple-600 dark:text-purple-300", bgColor: "bg-purple-100 dark:bg-purple-950/40", icon: Trophy },
+          { value: coins, label: "Tangalar", color: "from-amber-500 to-orange-500", textColor: "text-amber-600 dark:text-amber-300", bgColor: "bg-amber-100 dark:bg-amber-950/40", icon: Sparkles },
+          { value: `${studentGroups.length}`, label: "Guruhlar", color: "from-emerald-500 to-teal-500", textColor: "text-emerald-600 dark:text-emerald-300", bgColor: "bg-emerald-100 dark:bg-emerald-950/40", icon: Users },
+          { value: level, label: "Streak (kun)", color: "from-rose-500 to-pink-500", textColor: "text-rose-600 dark:text-rose-300", bgColor: "bg-rose-100 dark:bg-rose-950/40", icon: Flame },
         ].map((stat) => (
-          <div key={stat.label} className="p-5 bg-white dark:bg-[#151433] rounded-2xl border border-gray-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <span className={`text-2xl font-bold font-mono block text-${stat.color}-600`}>{stat.value}</span>
-              <p className="text-[11px] text-gray-400 font-bold uppercase mt-1">{stat.label}</p>
+          <div key={stat.label} className={`p-5 bg-gradient-to-br ${stat.color} rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 text-white relative overflow-hidden group`}>
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10 space-y-2">
+              <span className="text-4xl font-black block">{stat.value}</span>
+              <p className="text-xs font-bold text-white/80 uppercase tracking-wide">{stat.label}</p>
             </div>
-            <div className={`p-3 bg-${stat.color}-500/10 text-${stat.color}-500 rounded-xl`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
+            <stat.icon className="absolute bottom-2 right-2 w-8 h-8 text-white/20" />
           </div>
         ))}
+      </div>
+
+      {/* AI Recommendations */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-200 dark:border-indigo-800 rounded-3xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl text-white">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-black text-lg text-gray-900 dark:text-white">🤖 AI Maslahatlar</h3>
+            <p className="text-xs text-gray-600 dark:text-slate-400">Shaxsiy tavsiyalar va mo'jiza planlar</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { title: 'IELTS Strategiya', desc: 'AI yazib bergan 30 kunlik plan', icon: '📚' },
+            { title: 'SAT Maaster Klass', desc: 'Math va Reading uchun tips', icon: '🎯' },
+            { title: 'Portfolio AI', desc: 'Universitetlar uchun tayyorlash', icon: '✨' },
+          ].map((rec) => (
+            <button key={rec.title} onClick={() => onNavigate('ai')} className="p-4 bg-white dark:bg-slate-800 rounded-2xl hover:shadow-lg transition-all text-left border-2 border-transparent hover:border-indigo-500 dark:hover:border-indigo-400">
+              <span className="text-2xl">{rec.icon}</span>
+              <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-2">{rec.title}</h4>
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1">{rec.desc}</p>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* My Enrolled Courses */}
