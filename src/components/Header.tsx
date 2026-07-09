@@ -258,7 +258,6 @@ export default function Header() {
                     { value: 'teacher', label: 'O\'qituvchi' },
                     { value: 'admin', label: 'Admin' },
                   ]}
-                  darkMode={isDarkMode}
                 />
               </div>
               <button

@@ -39,10 +39,10 @@ export default function AuthScreen() {
       </div>
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
-          <div className="mb-8 flex flex-col items-center">
-            <img src={logoSrc} alt="LifeSprint" className="mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg" />
+        <div className="mb-8 flex flex-col items-center">
+          <img src={logoSrc} alt="LifeSprint" className="mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg" />
           <h1 className="text-3xl font-black tracking-tight text-[color:var(--text)]">LifeSprint</h1>
-          <p className="mt-1 text-sm font-bold text-[color:var(--text-muted)]">
+          <p className="mt-1 text-sm font-medium text-[color:var(--text-muted)]">
             {mode === 'login' ? 'Hisobingizga kiring' : 'Yangi hisob yarating'}
           </p>
         </div>
