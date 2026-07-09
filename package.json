@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
+    "build:server": "esbuild api/handler.ts --bundle --platform=node --format=esm --outfile=api/index.js --external:express --external:cookie-parser --external:dotenv --external:jsonwebtoken --external:bcryptjs --external:openai --external:@neondatabase/serverless",
+    "build:vercel": "npm run build && npm run build:server",
     "start": "NODE_ENV=production node --experimental-specifier-resolution=node --loader tsx server.ts",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
