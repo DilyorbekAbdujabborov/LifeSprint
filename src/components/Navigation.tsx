@@ -13,6 +13,7 @@ import {
   BookOpen,
   Clock,
 } from 'lucide-react';
+import logoSrc from '../img/logo.jpg';
 
 interface NavigationProps {
   currentTab: string;
@@ -74,7 +75,7 @@ export default function Navigation({
       key: 'oyin_zonasi',
       title: "O'YIN ZONASI",
       items: [
-        { id: 'gamezone', label: 'Game Zone', icon: Gamepad },
+        { id: 'gamezone', label: 'AI Adventures', icon: Gamepad },
         { id: 'edu_battle', label: 'Edu Battle', icon: Swords },
         { id: 'edu_team', label: 'Edu Team', icon: Shield },
       ]
@@ -102,29 +103,8 @@ export default function Navigation({
       <div className="flex items-center gap-4 border-b border-[var(--sidebar-border)] bg-[var(--sidebar-logo-bg)] p-5 sm:p-6" id="logo_section">
         <div className="relative group flex items-center justify-center shrink-0" id="logo_wrapper">
           <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-sky-400 to-emerald-400 blur-md opacity-55 transition duration-300 group-hover:opacity-100"></div>
-          <div className="relative flex items-center justify-center rounded-2xl border border-[var(--sidebar-logo-inner-border)] bg-[var(--sidebar-logo-inner-bg)] p-2 text-[var(--sidebar-logo-text)] shadow-sm transition-all duration-300 group-hover:scale-105 active:scale-95" id="logo_inner">
-            <svg className="w-7 h-7" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="growthGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="50%" stopColor="#34d399" />
-                  <stop offset="100%" stopColor="#0091ff" />
-                </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              <path d="M50,85 C50,60 45,45 50,20" stroke="url(#growthGrad)" strokeWidth="7" strokeLinecap="round" fill="none" filter="url(#glow)" />
-              <path d="M48,60 C30,60 25,45 42,40 C46,45 48,52 48,60 Z" fill="url(#growthGrad)" opacity="0.9" />
-              <path d="M52,45 C70,45 75,30 58,25 C54,30 52,37 52,45 Z" fill="url(#growthGrad)" opacity="0.95" />
-              <path d="M50,20 L40,25 C45,15 50,5 50,5 C50,5 55,15 60,25 Z" fill="#ffffff" filter="url(#glow)" />
-              <circle cx="30" cy="35" r="2.5" fill="#10b981" />
-              <circle cx="70" cy="20" r="3" fill="#0091ff" />
-            </svg>
+          <div className="relative flex items-center justify-center rounded-2xl border border-[var(--sidebar-logo-inner-border)] bg-[var(--sidebar-logo-inner-bg)] p-1 text-[var(--sidebar-logo-text)] shadow-sm transition-all duration-300 group-hover:scale-105 active:scale-95 overflow-hidden" id="logo_inner">
+            <img src={logoSrc} alt="LifeSprint" className="w-9 h-9 object-cover rounded-xl" />
           </div>
         </div>
         <div className="text-left">
@@ -134,12 +114,12 @@ export default function Navigation({
           <p className="text-[10px] font-black tracking-widest text-[var(--sidebar-accent)] uppercase font-sans" id="brand_tagline">
             Muvaffaqiyat Ekotizimi
           </p>
-          <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-[var(--sidebar-badge-text)]">
-            <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">Daraja {level}</span>
-            <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">{xp.toLocaleString()} XP</span>
-            <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">{coins.toLocaleString()} coin</span>
-          </div>
         </div>
+      </div>
+      <div className="flex flex-wrap gap-2 px-5 py-3 border-b border-[var(--sidebar-border)] text-[10px] font-bold text-[var(--sidebar-badge-text)]">
+        <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">Daraja {level}</span>
+        <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">{xp.toLocaleString()} XP</span>
+        <span className="rounded-full border border-[var(--sidebar-badge-border)] bg-[var(--sidebar-badge-bg)] px-2.5 py-1">{coins.toLocaleString()} coin</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-5 scrollbar-thin pb-4" id="nav_menu">

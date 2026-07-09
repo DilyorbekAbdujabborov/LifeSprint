@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import * as api from '../api';
+import { useStore } from '../store';
+import { DEFAULT_GROUPS } from '../defaults';
 import {
 	BookOpen,
 	Sparkles,
@@ -66,48 +68,52 @@ export default function MockStore({
 	const handleGrantConfirm = () => {
 		if (!showGrantModal) return;
 		const course = showGrantModal;
+		const defaultGroup = DEFAULT_GROUPS.find(g => g.courseId === course.id);
 
-		setCourses((prev) =>
-			prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c))
-		);
+		useStore.getState().enrollCourse(course.id);
 
 		const studentName = 'Biloliddin Akramov';
 		setGroups((prev) => {
 			const existingGroup = prev.find((g) => g.courseId === course.id);
-			if (existingGroup && !existingGroup.pendingStudents.includes(studentName)) {
-				return prev.map((g) => {
-					if (g.courseId === course.id) {
-						return {
-							...g,
-							pendingStudents: [...g.pendingStudents, studentName],
-						};
-					}
-					return g;
-				});
-			} else if (!existingGroup) {
-				const newGroup = {
-					id: `g_${Date.now()}`,
-					name: `${course.title} Guruh`,
-					teacherName: course.teacherName,
-					courseTitle: course.title,
-					courseId: course.id,
-					studentsCount: 0,
-					students: [],
-					pendingStudents: [studentName],
-					courseDays: [],
-					courseTime: '',
-					rating: course.rating,
-					progress: 0,
-					lessons: [],
-					homeworks: [],
-					quizzes: [],
-					tests: [],
-					announcements: [],
-					files: [],
-				};
-				return [...prev, newGroup];
+			if (existingGroup) {
+				const hasStudent = existingGroup.students.includes(studentName);
+				const hasPending = existingGroup.pendingStudents?.includes(studentName);
+				if (!hasStudent || !hasPending) {
+					return prev.map((g) => {
+						if (g.courseId === course.id) {
+							return {
+								...g,
+								students: hasStudent ? g.students : [...g.students, studentName],
+								studentsCount: hasStudent ? g.studentsCount : g.studentsCount + 1,
+								pendingStudents: hasPending ? g.pendingStudents : [...(g.pendingStudents || []), studentName],
+							};
+						}
+						return g;
+					});
+				}
+				return prev;
 			}
-			return prev;
+			const newGroup = {
+				id: `g_${Date.now()}`,
+				name: `${course.title} Guruh`,
+				teacherName: course.teacherName,
+				courseTitle: course.title,
+				courseId: course.id,
+				studentsCount: 1,
+				students: [studentName],
+				pendingStudents: [studentName],
+				courseDays: [],
+				courseTime: '',
+				rating: course.rating,
+				progress: 0,
+				lessons: defaultGroup?.lessons || [],
+				homeworks: defaultGroup?.homeworks || [],
+				quizzes: defaultGroup?.quizzes || [],
+				tests: defaultGroup?.tests || [],
+				announcements: [],
+				files: defaultGroup?.files || [],
+			};
+			return [...prev, newGroup];
 		});
 
 		api.rewardAndUpdate(setXp, null, setLevel, 'grant_enrollment');
@@ -131,48 +137,52 @@ export default function MockStore({
 
 		// Normal purchase with coins
 		api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
-		setCourses((prev) =>
-			prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c))
-		);
+		const defaultGroup = DEFAULT_GROUPS.find(g => g.courseId === course.id);
+		useStore.getState().enrollCourse(course.id);
 
-		// Add to pendingStudents — teacher must approve
+		// Add to both students and pendingStudents so content is immediately visible
 		const studentName = 'Biloliddin Akramov';
 		setGroups((prev) => {
 			const existingGroup = prev.find((g) => g.courseId === course.id);
-			if (existingGroup && !existingGroup.pendingStudents.includes(studentName)) {
-				return prev.map((g) => {
-					if (g.courseId === course.id) {
-						return {
-							...g,
-							pendingStudents: [...g.pendingStudents, studentName],
-						};
-					}
-					return g;
-				});
-			} else if (!existingGroup) {
-				const newGroup = {
-					id: `g_${Date.now()}`,
-					name: `${course.title} Guruh`,
-					teacherName: course.teacherName,
-					courseTitle: course.title,
-					courseId: course.id,
-					studentsCount: 0,
-					students: [],
-					pendingStudents: [studentName],
-					courseDays: [],
-					courseTime: '',
-					rating: course.rating,
-					progress: 0,
-					lessons: [],
-					homeworks: [],
-					quizzes: [],
-					tests: [],
-					announcements: [],
-					files: [],
-				};
-				return [...prev, newGroup];
+			if (existingGroup) {
+				const hasStudent = existingGroup.students.includes(studentName);
+				const hasPending = existingGroup.pendingStudents?.includes(studentName);
+				if (!hasStudent || !hasPending) {
+					return prev.map((g) => {
+						if (g.courseId === course.id) {
+							return {
+								...g,
+								students: hasStudent ? g.students : [...g.students, studentName],
+								studentsCount: hasStudent ? g.studentsCount : g.studentsCount + 1,
+								pendingStudents: hasPending ? g.pendingStudents : [...(g.pendingStudents || []), studentName],
+							};
+						}
+						return g;
+					});
+				}
+				return prev;
 			}
-			return prev;
+			const newGroup = {
+				id: `g_${Date.now()}`,
+				name: `${course.title} Guruh`,
+				teacherName: course.teacherName,
+				courseTitle: course.title,
+				courseId: course.id,
+				studentsCount: 1,
+				students: [studentName],
+				pendingStudents: [studentName],
+				courseDays: [],
+				courseTime: '',
+				rating: course.rating,
+				progress: 0,
+				lessons: defaultGroup?.lessons || [],
+				homeworks: defaultGroup?.homeworks || [],
+				quizzes: defaultGroup?.quizzes || [],
+				tests: defaultGroup?.tests || [],
+				announcements: [],
+				files: defaultGroup?.files || [],
+			};
+			return [...prev, newGroup];
 		});
 
 		triggerStatus(

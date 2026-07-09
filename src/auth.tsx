@@ -23,27 +23,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     api
-      .fetchMe()
+      .fetchMe(controller.signal)
       .then((res) => setUser(res.user))
-      .catch(() => api.setToken(null))
-      .finally(() => setLoading(false));
+      .catch(() => { api.setToken(null); })
+      .finally(() => { clearTimeout(timeout); setLoading(false); });
+    return () => { clearTimeout(timeout); controller.abort(); };
   }, []);
 
   const login = async (email: string, password: string) => {
     const res = await api.login({ email, password });
-    api.setToken(res.token);
+    api.setToken(res.accessToken);
+    api.setRefreshToken(res.refreshToken);
     setUser(res.user);
   };
 
   const register = async (name: string, email: string, password: string, role?: string) => {
     const res = await api.register({ name, email, password, role });
-    api.setToken(res.token);
+    api.setToken(res.accessToken);
+    api.setRefreshToken(res.refreshToken);
     setUser(res.user);
   };
 
   const logout = () => {
     api.setToken(null);
+    api.setRefreshToken(null);
     setUser(null);
   };
 

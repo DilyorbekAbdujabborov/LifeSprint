@@ -390,7 +390,7 @@ export default function Pandoo({
     try {
       const context = chatMessages.map(m => `${m.role === 'user' ? 'O\'quvchi' : 'Pandoo'}: ${m.text}`).join('\n');
       const prompt = `${context}\nO'quvchi: ${msg}\nPandoo:`;
-      const res = await api.geminiAnalyze(prompt, PANDOO_SYSTEM_PROMPT);
+      const res = await api.aiAnalyze(prompt, PANDOO_SYSTEM_PROMPT);
       setChatMessages(prev => [...prev, { role: 'ai', text: res.text || 'Kechirasiz, javob berishda xatolik yuz berdi.' }]);
     } catch {
       setChatMessages(prev => [...prev, { role: 'ai', text: 'Kechirasiz, hozir javob bera olmayman. Iltimos, keyinroq urinib koring.' }]);

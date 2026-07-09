@@ -37,6 +37,12 @@ router.post("/publish-course", authMiddleware, async (req: AuthedRequest, res: R
   const courses = state.courses || [];
   courses.unshift(course);
   state.courses = courses;
+  // Enroll the publisher automatically
+  const ids = state.enrolledCourseIds || [];
+  if (course.id && !ids.includes(course.id)) {
+    ids.push(course.id);
+  }
+  state.enrolledCourseIds = ids;
   await saveRaw(req.userId!, state);
   res.json({ course, courses });
 });
@@ -88,12 +94,15 @@ router.post("/enroll-course", authMiddleware, async (req: AuthedRequest, res: Re
     return res.status(400).json({ error: "Kurs ID talab qilinadi." });
   }
   const state = await loadRaw(req.userId!);
+  const ids = state.enrolledCourseIds || [];
+  if (!ids.includes(courseId)) {
+    ids.push(courseId);
+  }
+  state.enrolledCourseIds = ids;
+  // Also set enrolled flag on catalog courses for backward compat
   const courses = state.courses || [];
   const course = courses.find((c: any) => c.id === courseId);
-  if (!course) {
-    return res.status(404).json({ error: "Kurs topilmadi." });
-  }
-  course.enrolled = true;
+  if (course) course.enrolled = true;
   state.courses = courses;
   await saveRaw(req.userId!, state);
   res.json({ ok: true });

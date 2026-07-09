@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FileText } from 'lucide-react';
 import * as api from '../api';
 import type { Group, LmsTest } from '../types';
+import Pandoo from './Pandoo';
 
 const testData = [
   ['1. What is the key performance benefit of Next.js SSR?', 'Pre-renders HTML server-side', 'Increases client bundle size', 'Requires no database', 'Bypasses Node runtime'],
@@ -27,19 +28,36 @@ export default function StudentTests({
   const [activeTestIndex, setActiveTestIndex] = useState(0);
   const [testScore, setTestScore] = useState(0);
   const [testCompleted, setTestCompleted] = useState(false);
+  const [testWrongAnswers, setTestWrongAnswers] = useState<{ question: string; options: string[]; correct: number; userAnswer: number; explanation: string }[]>([]);
+  const [showPandoo, setShowPandoo] = useState(false);
 
   const handleStartTest = (test: LmsTest) => {
     setSelectedTest(test);
     setActiveTestIndex(0);
     setTestScore(0);
     setTestCompleted(false);
+    setTestWrongAnswers([]);
+    setShowPandoo(false);
   };
 
   const handleAnswerTestQuestion = (isCorrect: boolean) => {
     if (isCorrect) setTestScore((p) => p + 1);
+    else {
+      setTestWrongAnswers((prev) => [
+        ...prev,
+        {
+          question: testData[activeTestIndex][0],
+          options: testData[activeTestIndex].slice(1),
+          correct: 0,
+          userAnswer: -1,
+          explanation: "Pandoo tahlil qilmoqda...",
+        },
+      ]);
+    }
     if (activeTestIndex < 4) {
       setActiveTestIndex((p) => p + 1);
     } else {
+      const finalScore = testScore + (isCorrect ? 1 : 0);
       setTestCompleted(true);
       api.rewardAndUpdate(setXp, setCoins, setLevel, 'complete_group_test');
       if (activeGroupId && selectedTest) {
@@ -47,12 +65,13 @@ export default function StudentTests({
           g.id === activeGroupId
             ? { ...g, tests: g.tests.map((t) =>
                 t.id === selectedTest.id
-                  ? { ...t, completed: true, score: testScore + (isCorrect ? 1 : 0) }
+                  ? { ...t, completed: true, score: finalScore }
                   : t
               ) }
             : g
         ));
       }
+      if (finalScore / 5 < 0.5) setShowPandoo(true);
     }
   };
 
@@ -142,6 +161,20 @@ export default function StudentTests({
             </div>
           )}
         </div>
+      )}
+
+      {showPandoo && (
+        <Pandoo
+          isOpen={showPandoo}
+          onClose={() => setShowPandoo(false)}
+          testTitle={selectedTest?.title || "Guruh Testi"}
+          wrongQuestions={testWrongAnswers}
+          correctCount={testScore}
+          totalQuestions={5}
+          setXp={setXp}
+          setCoins={setCoins}
+          setLevel={setLevel}
+        />
       )}
     </div>
   );

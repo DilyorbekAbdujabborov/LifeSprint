@@ -4,14 +4,19 @@ import jwt from "jsonwebtoken";
 import db, { UserRow } from './db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || "lifesprint-dev-secret-change-me";
-const TOKEN_TTL = "30d";
+const ACCESS_TTL = "15m";
+const REFRESH_TTL = "7d";
 
 export interface AuthedRequest extends Request {
   userId?: number;
 }
 
-function sign(userId: number): string {
-  return jwt.sign({ uid: userId }, JWT_SECRET, { expiresIn: TOKEN_TTL });
+function signAccess(userId: number): string {
+  return jwt.sign({ uid: userId, type: "access" }, JWT_SECRET, { expiresIn: ACCESS_TTL });
+}
+
+function signRefresh(userId: number): string {
+  return jwt.sign({ uid: userId, type: "refresh" }, JWT_SECRET, { expiresIn: REFRESH_TTL });
 }
 
 function publicUser(row: UserRow) {
@@ -28,7 +33,10 @@ export function authMiddleware(req: AuthedRequest, res: Response, next: NextFunc
     return res.status(401).json({ error: "Avtorizatsiya talab qilinadi." });
   }
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { uid: number };
+    const payload = jwt.verify(token, JWT_SECRET) as { uid: number; type?: string };
+    if (payload.type && payload.type !== "access") {
+      return res.status(401).json({ error: "Noto'g'ri token turi." });
+    }
     req.userId = payload.uid;
     next();
   } catch {
@@ -60,8 +68,9 @@ router.post("/register", async (req: Request, res: Response) => {
 
   const userId = rows[0].id;
   const row = await db.get("SELECT * FROM users WHERE id = $1", [userId]) as UserRow;
-  const token = sign(userId);
-  res.status(201).json({ token, user: publicUser(row) });
+  const accessToken = signAccess(userId);
+  const refreshToken = signRefresh(userId);
+  res.status(201).json({ accessToken, refreshToken, user: publicUser(row) });
 });
 
 router.post("/login", async (req: Request, res: Response) => {
@@ -73,8 +82,29 @@ router.post("/login", async (req: Request, res: Response) => {
   if (!row || !bcrypt.compareSync(String(password), row.password_hash)) {
     return res.status(401).json({ error: "Email yoki parol noto'g'ri." });
   }
-  const token = sign(row.id);
-  res.json({ token, user: publicUser(row) });
+  const accessToken = signAccess(row.id);
+  const refreshToken = signRefresh(row.id);
+  res.json({ accessToken, refreshToken, user: publicUser(row) });
+});
+
+router.post("/refresh", async (req: Request, res: Response) => {
+  const { refreshToken } = req.body || {};
+  if (!refreshToken) {
+    return res.status(400).json({ error: "Refresh token talab qilinadi." });
+  }
+  try {
+    const payload = jwt.verify(refreshToken, JWT_SECRET) as { uid: number; type: string };
+    if (payload.type !== "refresh") {
+      return res.status(401).json({ error: "Noto'g'ri token turi." });
+    }
+    const row = await db.get("SELECT * FROM users WHERE id = $1", [payload.uid]) as UserRow | undefined;
+    if (!row) return res.status(404).json({ error: "Foydalanuvchi topilmadi." });
+    const newAccess = signAccess(payload.uid);
+    const newRefresh = signRefresh(payload.uid);
+    res.json({ accessToken: newAccess, refreshToken: newRefresh, user: publicUser(row) });
+  } catch {
+    return res.status(401).json({ error: "Refresh token yaroqsiz yoki muddati o'tgan." });
+  }
 });
 
 router.get("/me", authMiddleware, async (req: AuthedRequest, res: Response) => {

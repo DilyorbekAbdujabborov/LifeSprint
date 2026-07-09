@@ -456,11 +456,11 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
     <div className="min-h-screen py-8 sm:py-12 px-4 sm:px-6 md:px-12 lg:px-20 max-w-7xl mx-auto space-y-10 sm:space-y-16" id="consulting_root">
       
       {/* Premium Minimal Header */}
-      <div className="space-y-2 border-b border-neutral-100 pb-8 animate-fade-in" id="consulting_header">
-        <h1 className="text-3xl md:text-4xl font-normal tracking-tight text-neutral-950 font-sans">
+      <div className="space-y-2 border-b border-neutral-100 dark:border-slate-800 pb-8 animate-fade-in" id="consulting_header">
+        <h1 className="text-3xl md:text-4xl font-normal tracking-tight text-neutral-950 dark:text-white font-sans">
           University Consulting
         </h1>
-        <p className="text-sm md:text-base text-neutral-400 font-light max-w-xl">
+        <p className="text-sm md:text-base text-neutral-400 dark:text-slate-400 font-light max-w-xl">
           Akademik ko&apos;rsatkichlaringizni kiriting va sizga eng mos keladigan oliygohlar, grantlar va tayyorgarlik yo&apos;l xaritasini aniqlang.
         </p>
       </div>
@@ -473,11 +473,11 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
           <form onSubmit={handleFindUniversities} className="space-y-6" id="profil_form">
             
             {/* Input Wrapper */}
-            <div className="space-y-5 bg-white p-6 border border-neutral-200/60 rounded-2xl shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)]" id="form_inputs_card">
+            <div className="space-y-5 bg-white dark:bg-[#151433] p-6 border border-neutral-200/60 dark:border-slate-800 rounded-2xl shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)]" id="form_inputs_card">
               
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider" htmlFor="input_ielts">IELTS</label>
+                  <label className="text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="input_ielts">IELTS</label>
                   <span className="text-[10px] text-neutral-400 font-light">Min: 5.0 / Max: 9.0</span>
                 </div>
                 <input
@@ -486,14 +486,14 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   value={ielts}
                   onChange={(e) => setIelts(e.target.value)}
                   placeholder="Masalan: 7.5"
-                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
+                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 dark:bg-slate-800/50 border border-neutral-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
                   required
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider" htmlFor="input_sat">SAT</label>
+                  <label className="text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="input_sat">SAT</label>
                   <span className="text-[10px] text-neutral-400 font-light">Min: 400 / Max: 1600</span>
                 </div>
                 <input
@@ -502,14 +502,14 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   value={sat}
                   onChange={(e) => setSat(e.target.value)}
                   placeholder="Masalan: 1480"
-                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
+                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 dark:bg-slate-800/50 border border-neutral-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
                   required
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider" htmlFor="input_gpa">GPA</label>
+                  <label className="text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="input_gpa">GPA</label>
                   <span className="text-[10px] text-neutral-400 font-light">Min: 1.0 / Max: 4.0</span>
                 </div>
                 <input
@@ -518,33 +518,33 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   value={gpa}
                   onChange={(e) => setGpa(e.target.value)}
                   placeholder="Masalan: 3.9"
-                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
+                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 dark:bg-slate-800/50 border border-neutral-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider" htmlFor="input_budget">Budget (Yillik $)</label>
+                <label className="text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="input_budget">Budget (Yillik $)</label>
                 <input
                   id="input_budget"
                   type="text"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
                   placeholder="Masalan: 15000"
-                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
+                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 dark:bg-slate-800/50 border border-neutral-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider" htmlFor="input_major">Major (Mutaxassislik)</label>
+                <label className="text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider" htmlFor="input_major">Major (Mutaxassislik)</label>
                 <input
                   id="input_major"
                   type="text"
                   value={major}
                   onChange={(e) => setMajor(e.target.value)}
                   placeholder="Masalan: Computer Science"
-                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
+                  className="w-full px-3.5 py-2.5 text-sm bg-neutral-50/50 dark:bg-slate-800/50 border border-neutral-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition duration-150"
                   required
                 />
               </div>
@@ -578,12 +578,12 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
           {isSearching ? (
             <div className="space-y-4" id="results_skeleton">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="bg-white p-6 border border-neutral-100 rounded-2xl space-y-4 animate-pulse">
-                  <div className="h-5 bg-neutral-100 rounded w-1/3" />
-                  <div className="h-4 bg-neutral-100 rounded w-1/4" />
+                <div key={n} className="bg-white dark:bg-[#151433] p-6 border border-neutral-100 dark:border-slate-800 rounded-2xl space-y-4 animate-pulse">
+                  <div className="h-5 bg-neutral-100 dark:bg-slate-700 rounded w-1/3" />
+                  <div className="h-4 bg-neutral-100 dark:bg-slate-700 rounded w-1/4" />
                   <div className="grid grid-cols-2 gap-4 pt-2">
-                    <div className="h-4 bg-neutral-100 rounded w-1/2" />
-                    <div className="h-4 bg-neutral-100 rounded w-1/2" />
+                    <div className="h-4 bg-neutral-100 dark:bg-slate-700 rounded w-1/2" />
+                    <div className="h-4 bg-neutral-100 dark:bg-slate-700 rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -595,17 +595,17 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   <div
                     key={idx}
                     id={`uni_card_${idx}`}
-                    className="bg-white p-6 md:p-8 border border-neutral-100 hover:border-neutral-200/80 rounded-2xl shadow-[0_2px_8px_-3px_rgba(0,0,0,0.02)] transition duration-200 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                    className="bg-white dark:bg-[#151433] p-6 md:p-8 border border-neutral-100 dark:border-slate-800 hover:border-neutral-200/80 dark:hover:border-slate-700 rounded-2xl shadow-[0_2px_8px_-3px_rgba(0,0,0,0.02)] transition duration-200 flex flex-col md:flex-row md:items-center justify-between gap-6"
                   >
                     {/* Left: General Info */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
                         <span className="text-[11px] font-medium tracking-wider text-neutral-400 uppercase">{uni.country}</span>
-                        <span className="bg-indigo-50 text-indigo-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
                           {uni.match}% Match
                         </span>
                       </div>
-                      <h3 className="text-lg md:text-xl font-normal text-neutral-900 tracking-tight">
+                      <h3 className="text-lg md:text-xl font-normal text-neutral-900 dark:text-white tracking-tight">
                         {uni.name}
                       </h3>
                       <p className="text-xs text-neutral-400 font-light">
@@ -618,7 +618,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                       <button
                         id={`btn_view_details_${idx}`}
                         onClick={() => setSelectedUni(uni)}
-                        className="w-full md:w-auto px-5 py-2 text-xs font-medium border border-neutral-200 rounded-xl hover:border-neutral-300 hover:bg-neutral-50 transition duration-150 text-neutral-700 cursor-pointer"
+                        className="w-full md:w-auto px-5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-xl hover:border-neutral-300 dark:hover:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-800 transition duration-150 text-neutral-700 dark:text-slate-300 cursor-pointer"
                       >
                         View Details
                       </button>
@@ -626,7 +626,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   </div>
                 ))
               ) : (
-                <div className="text-center py-20 border border-dashed border-neutral-100 rounded-2xl" id="no_results">
+                <div className="text-center py-20 border border-dashed border-neutral-100 dark:border-slate-800 rounded-2xl" id="no_results">
                   <p className="text-sm text-neutral-400 font-light">Tavsiya etilgan universitetlar ro&apos;yxatini ko&apos;rish uchun ma&apos;lumotlaringizni kiriting.</p>
                 </div>
               )}
@@ -638,17 +638,17 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
       </div>
 
       {/* Elegant Divider */}
-      <div className="border-t border-neutral-100 my-12" />
+      <div className="border-t border-neutral-100 dark:border-slate-800 my-12" />
 
       {/* ROADMAP SECTION (Roadmap tuzish joyi) */}
       <div className="space-y-8" id="roadmap_section">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-100 pb-6" id="roadmap_header">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-100 dark:border-slate-800 pb-6" id="roadmap_header">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Compass className="w-5 h-5 text-indigo-600" />
-              <h2 className="text-2xl font-normal text-neutral-950 tracking-tight">
+              <h2 className="text-2xl font-normal text-neutral-950 dark:text-white tracking-tight">
                 Shaxsiy Qabul Yo&apos;l Xaritasi (Roadmap)
               </h2>
             </div>
@@ -666,7 +666,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                   setRoadmapType('standard');
                   setRoadmap(getInitialRoadmap(ielts, sat, gpa, budget, major));
                 }}
-                className="px-4 py-2 text-xs font-normal border border-neutral-200 rounded-xl hover:border-neutral-300 text-neutral-500 cursor-pointer flex items-center gap-1.5 transition"
+                className="px-4 py-2 text-xs font-normal border border-neutral-200 dark:border-slate-700 rounded-xl hover:border-neutral-300 dark:hover:border-slate-600 text-neutral-500 dark:text-slate-400 cursor-pointer flex items-center gap-1.5 transition"
               >
                 Standard Reja
               </button>
@@ -676,7 +676,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
               id="generate_ai_roadmap_btn"
               disabled={isGeneratingRoadmap}
               onClick={generateAiRoadmap}
-              className="px-4 py-2.5 text-xs font-medium bg-neutral-900 text-white hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400 rounded-xl transition cursor-pointer flex items-center gap-2 shadow-sm"
+              className="px-4 py-2.5 text-xs font-medium bg-neutral-900 dark:bg-indigo-600 text-white hover:bg-neutral-800 dark:hover:bg-indigo-700 disabled:bg-neutral-200 dark:disabled:bg-slate-700 disabled:text-neutral-400 dark:disabled:text-slate-500 rounded-xl transition cursor-pointer flex items-center gap-2 shadow-sm"
             >
               {isGeneratingRoadmap ? (
                 <>
@@ -706,7 +706,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
             <div key={pIdx} className="relative group animate-fade-in" id={`roadmap_phase_${pIdx}`}>
               
               {/* Timeline dot */}
-              <div className="absolute -left-[23px] md:-left-[35px] top-1.5 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-[10px] md:text-xs font-medium text-neutral-400 group-hover:border-indigo-500 group-hover:text-indigo-600 transition duration-150 shadow-sm">
+              <div className="absolute -left-[23px] md:-left-[35px] top-1.5 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white dark:bg-[#151433] border border-neutral-200 dark:border-slate-700 flex items-center justify-center text-[10px] md:text-xs font-medium text-neutral-400 dark:text-slate-400 group-hover:border-indigo-500 group-hover:text-indigo-600 transition duration-150 shadow-sm">
                 {pIdx + 1}
               </div>
 
@@ -720,7 +720,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                       <Clock className="w-3 h-3" /> {phase.duration}
                     </span>
                   </div>
-                  <h3 className="text-base md:text-lg font-normal text-neutral-900 tracking-tight">
+                  <h3 className="text-base md:text-lg font-normal text-neutral-900 dark:text-white tracking-tight">
                     {phase.title}
                   </h3>
                   <p className="text-xs md:text-sm text-neutral-400 font-light leading-relaxed">
@@ -729,7 +729,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                 </div>
 
                 {/* Tasks Checklist (Right side of local content) */}
-                <div className="lg:col-span-8 bg-neutral-50/30 border border-neutral-200/50 rounded-2xl p-6 md:p-8 space-y-4 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.01)]">
+                <div className="lg:col-span-8 bg-neutral-50/30 dark:bg-slate-800/20 border border-neutral-200/50 dark:border-slate-700 rounded-2xl p-6 md:p-8 space-y-4 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.01)]">
                   <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">Bosqich vazifalari</span>
                   
                   <div className="space-y-3.5">
@@ -739,8 +739,8 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                         onClick={() => toggleTask(pIdx, tIdx)}
                         className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all duration-150 cursor-pointer select-none ${
                           task.done 
-                            ? 'bg-neutral-50/50 border-neutral-200/40 text-neutral-400 line-through' 
-                            : 'bg-white border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50 text-neutral-700 shadow-sm shadow-neutral-100/50'
+                            ? 'bg-neutral-50/50 dark:bg-slate-800/40 border-neutral-200/40 dark:border-slate-700 text-neutral-400 line-through' 
+                            : 'bg-white dark:bg-[#151433] border-neutral-100 dark:border-slate-800 hover:border-neutral-200 dark:hover:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800/50 text-neutral-700 dark:text-slate-300 shadow-sm shadow-neutral-100/50 dark:shadow-none'
                         }`}
                         id={`task_${pIdx}_${tIdx}`}
                       >
@@ -748,7 +748,7 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
                         <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${
                           task.done 
                             ? 'bg-indigo-600 border-indigo-600 text-white' 
-                            : 'bg-white border-neutral-300 group-hover:border-neutral-400'
+                            : 'bg-white dark:bg-slate-800 border-neutral-300 dark:border-slate-600 group-hover:border-neutral-400'
                         }`}>
                           {task.done && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
@@ -774,25 +774,25 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
       {/* Modal: View Details Overlay (Apple style, minimalist) */}
       {selectedUni && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/20 backdrop-blur-xs transition duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/20 dark:bg-black/60 backdrop-blur-xs transition duration-200"
           id="details_modal_overlay"
           onClick={() => setSelectedUni(null)}
         >
           <div
-            className="bg-white w-full max-w-xl rounded-3xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.12)] border border-neutral-100 overflow-hidden transform transition-all duration-300 flex flex-col"
+            className="bg-white dark:bg-[#151433] w-full max-w-xl rounded-3xl shadow-[0_12px_40px_-12px_rgba(0,0,0,0.12)] border border-neutral-100 dark:border-slate-800 overflow-hidden transform transition-all duration-300 flex flex-col"
             id="details_modal_content"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-6 md:p-8 border-b border-neutral-100 flex justify-between items-start">
+            <div className="p-6 md:p-8 border-b border-neutral-100 dark:border-slate-800 flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">{selectedUni.country}</span>
-                <h2 className="text-xl md:text-2xl font-normal text-neutral-900 tracking-tight mt-1">{selectedUni.name}</h2>
+                <span className="text-[10px] font-semibold tracking-wider text-neutral-400 dark:text-slate-400 uppercase">{selectedUni.country}</span>
+                <h2 className="text-xl md:text-2xl font-normal text-neutral-900 dark:text-white tracking-tight mt-1">{selectedUni.name}</h2>
               </div>
               <button
                 id="close_modal_btn"
                 onClick={() => setSelectedUni(null)}
-                className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 transition"
+                className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -803,13 +803,13 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
               
               {/* Stats badges */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/30">
-                  <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wider block">Match %</span>
-                  <span className="text-xl font-medium text-indigo-900 font-sans mt-1 block">{selectedUni.match}% Moslik</span>
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100/30 dark:border-indigo-800/30">
+                  <span className="text-[10px] font-medium text-indigo-500 dark:text-indigo-400 uppercase tracking-wider block">Match %</span>
+                  <span className="text-xl font-medium text-indigo-900 dark:text-indigo-200 font-sans mt-1 block">{selectedUni.match}% Moslik</span>
                 </div>
-                <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100">
-                  <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider block">Tuition Fee</span>
-                  <span className="text-xl font-medium text-neutral-800 font-sans mt-1 block">
+                <div className="bg-neutral-50 dark:bg-slate-800/50 p-4 rounded-xl border border-neutral-100 dark:border-slate-700">
+                  <span className="text-[10px] font-medium text-neutral-400 dark:text-slate-400 uppercase tracking-wider block">Tuition Fee</span>
+                  <span className="text-xl font-medium text-neutral-800 dark:text-slate-200 font-sans mt-1 block">
                     {selectedUni.fee === 0 ? 'Bepul' : `$${selectedUni.fee.toLocaleString()} / yil`}
                   </span>
                 </div>
@@ -819,24 +819,24 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
               <div className="space-y-5 text-sm leading-relaxed text-neutral-600">
                 
                 <div className="space-y-1.5">
-                  <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Nega to&apos;g&apos;ri keladi?
                   </h4>
-                  <p className="text-neutral-500 font-light">{selectedUni.whyMatch}</p>
+                  <p className="text-neutral-500 dark:text-slate-400 font-light">{selectedUni.whyMatch}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5 text-indigo-500" /> Universitet haqida
                   </h4>
-                  <p className="text-neutral-500 font-light">{selectedUni.details}</p>
+                  <p className="text-neutral-500 dark:text-slate-400 font-light">{selectedUni.details}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <h4 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-indigo-500" /> Tavsiya etilgan Grantlar
                   </h4>
-                  <div className="bg-neutral-50 p-3.5 rounded-xl border border-neutral-100 text-neutral-700 font-medium text-xs">
+                  <div className="bg-neutral-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-neutral-100 dark:border-slate-700 text-neutral-700 dark:text-slate-300 font-medium text-xs">
                     {selectedUni.scholarship}
                   </div>
                 </div>
@@ -846,11 +846,11 @@ Faqat quyidagi valid JSON formatidagi massivni qaytaring:
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 md:p-8 bg-neutral-50/50 border-t border-neutral-100 flex justify-end">
+            <div className="p-6 md:p-8 bg-neutral-50/50 dark:bg-slate-800/30 border-t border-neutral-100 dark:border-slate-800 flex justify-end">
               <button
                 id="close_modal_footer_btn"
                 onClick={() => setSelectedUni(null)}
-                className="px-5 py-2 text-xs font-medium bg-neutral-900 text-white rounded-xl hover:bg-neutral-800 transition duration-150 cursor-pointer"
+                className="px-5 py-2 text-xs font-medium bg-neutral-900 dark:bg-indigo-600 text-white rounded-xl hover:bg-neutral-800 dark:hover:bg-indigo-700 transition duration-150 cursor-pointer"
               >
                 Yopish
               </button>

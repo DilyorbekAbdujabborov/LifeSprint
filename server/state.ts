@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
     { id: "e2", name: "SAT Testi (Digital)", date: "2026-10-05", type: "SAT", targetScore: "1550", currentScore: "" },
     { id: "e3", name: "Milliy Sertifikat: Matematika", date: "2026-09-20", type: "Milliy", subject: "Matematika", targetScore: "A+" }
   ],
+  enrolledCourseIds: ["c2"],
   courses: [
     { id: "c1", title: "Frontend Dasturlash (React & Next.js)", description: "Zamonaviy veb-ilovalarni yaratishni amaliyotda o'rganing.", teacherName: "Boburjon G'ulomov", priceCoins: 120, enrolled: false, duration: "3 oy (24 dars)", lessonsCount: 24, rating: 4.9, ratingCount: 142, category: "Dasturlash", color: "indigo" },
     { id: "c2", title: "Ingliz Tili: IELTS Prep (A1 dan B2)", description: "IELTS imtihoniga mukammal tayyorgarlik kursi.", teacherName: "Shahnoza Tursunaliyeva", priceCoins: 80, enrolled: true, duration: "2 oy (16 dars)", lessonsCount: 16, rating: 4.8, ratingCount: 96, category: "Xorijiy tillar", color: "emerald" },

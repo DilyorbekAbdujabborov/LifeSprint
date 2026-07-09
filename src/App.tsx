@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useState } from 'react';
+import { useEffect, lazy, Suspense, useState, useRef } from 'react';
 import { HashRouter, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth';
 import { ToastProvider } from './toast';
@@ -70,16 +70,30 @@ function AppMain() {
   } = useStore();
 
   const [pandooOpen, setPandooOpen] = useState(false);
+  const synced = useRef(false);
 
-  // Hash → Store (on mount & back/forward)
-  const hashKey = location.pathname === '/' ? '/' : location.pathname.replace(/^\//, '');
+  // One-time initial sync: hash → store, then allow store → hash
   useEffect(() => {
+    const hashKey = location.pathname === '/' ? '/' : location.pathname.replace(/^\//, '');
     const tab = HASH_TO_TAB_ID[hashKey] || 'dashboard';
     setCurrentTab(tab);
-  }, [hashKey, setCurrentTab]);
+    synced.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Store → Hash (on tab navigation)
+  // Browser back/forward: sync hash → store
   useEffect(() => {
+    const handlePop = () => {
+      const hk = location.pathname === '/' ? '/' : location.pathname.replace(/^\//, '');
+      const tab = HASH_TO_TAB_ID[hk] || 'dashboard';
+      setCurrentTab(tab);
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, [location.pathname, setCurrentTab]);
+
+  // Store → Hash (only after initial sync)
+  useEffect(() => {
+    if (!synced.current) return;
     const target = TAB_ID_TO_HASH[storeCurrentTab];
     if (target && location.pathname !== (target === '/' ? '/' : '/' + target)) {
       navigate(target === '/' ? '/' : '/' + target, { replace: true });
@@ -88,13 +102,16 @@ function AppMain() {
 
   useEffect(() => {
     loadState().then(() => {
-      useStore.getState().saveState();
       useStore.getState().loadGameProfile();
     });
     const n = setInterval(() => useStore.getState().saveState(), 30000);
-    return () => clearInterval(n);
+    const onUnload = () => useStore.getState().saveState();
+    window.addEventListener('beforeunload', onUnload);
+    return () => {
+      clearInterval(n);
+      window.removeEventListener('beforeunload', onUnload);
+    };
   }, []);
-  useEffect(() => { saveState(); }, [xp, level, coins, tasks, exams, habits, courses, groups, consultations, certificates, portfolio, posts, leaderboard, events, userRole]);
 
   const renderView = () => {
     if (userRole === 'parent') return <ParentPanel habits={habits} xp={xp} />;

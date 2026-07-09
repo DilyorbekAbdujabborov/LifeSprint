@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import * as api from './api';
 import type { Task, Exam, Habit, Course, Group, ConsultationSession, LmsCertificate, PortfolioData, Post, LeaderboardEntry, EventItem, GameProfile, GameAchievement, QuestDef, TitleDef } from './types';
 import {
-  DEFAULT_TASKS, DEFAULT_EXAMS, DEFAULT_HABITS, DEFAULT_COURSES, DEFAULT_GROUPS,
+  DEFAULT_TASKS, DEFAULT_EXAMS, DEFAULT_HABITS, COURSE_CATALOG, DEFAULT_GROUPS,
   DEFAULT_CONSULTATIONS, DEFAULT_CERTIFICATES, DEFAULT_PORTFOLIO, DEFAULT_POSTS,
   DEFAULT_LEADERBOARD, DEFAULT_EVENTS, DEFAULT_BADGES,
 } from './defaults';
@@ -17,6 +17,7 @@ interface AppState {
   tasks: Task[];
   exams: Exam[];
   habits: Habit[];
+  enrolledCourseIds: string[];
   courses: Course[];
   groups: Group[];
   consultations: ConsultationSession[];
@@ -50,6 +51,7 @@ interface AppState {
   setExams: (v: Exam[] | ((prev: Exam[]) => Exam[])) => void;
   setHabits: (v: Habit[] | ((prev: Habit[]) => Habit[])) => void;
   setCourses: (v: Course[] | ((prev: Course[]) => Course[])) => void;
+  enrollCourse: (courseId: string) => void;
   setGroups: (v: Group[] | ((prev: Group[]) => Group[])) => void;
   setConsultations: (v: ConsultationSession[] | ((prev: ConsultationSession[]) => ConsultationSession[])) => void;
   setCertificates: (v: LmsCertificate[] | ((prev: LmsCertificate[]) => LmsCertificate[])) => void;
@@ -91,7 +93,8 @@ export const useStore = create<AppState>((set, get) => ({
   tasks: DEFAULT_TASKS,
   exams: DEFAULT_EXAMS,
   habits: DEFAULT_HABITS,
-  courses: DEFAULT_COURSES,
+  enrolledCourseIds: ["c2"],
+  courses: COURSE_CATALOG.map(c => ({ ...c, enrolled: c.id === "c2" })),
   groups: DEFAULT_GROUPS,
   consultations: DEFAULT_CONSULTATIONS,
   certificates: DEFAULT_CERTIFICATES,
@@ -125,7 +128,22 @@ export const useStore = create<AppState>((set, get) => ({
   setTasks: (v) => set((s) => ({ tasks: typeof v === 'function' ? v(s.tasks) : v })),
   setExams: (v) => set((s) => ({ exams: typeof v === 'function' ? v(s.exams) : v })),
   setHabits: (v) => set((s) => ({ habits: typeof v === 'function' ? v(s.habits) : v })),
-  setCourses: (v) => set((s) => ({ courses: typeof v === 'function' ? v(s.courses) : v })),
+  setCourses: (v) => set((s) => {
+    const courses = typeof v === 'function' ? v(s.courses) : v;
+    return {
+      courses,
+      enrolledCourseIds: courses.filter(c => c.enrolled).map(c => c.id),
+    };
+  }),
+  enrollCourse: (courseId) => set((s) => {
+    const newIds = s.enrolledCourseIds.includes(courseId)
+      ? s.enrolledCourseIds
+      : [...s.enrolledCourseIds, courseId];
+    return {
+      enrolledCourseIds: newIds,
+      courses: s.courses.map(c => ({ ...c, enrolled: newIds.includes(c.id) })),
+    };
+  }),
   setGroups: (v) => set((s) => ({ groups: typeof v === 'function' ? v(s.groups) : v })),
   setConsultations: (v) => set((s) => ({ consultations: typeof v === 'function' ? v(s.consultations) : v })),
   setCertificates: (v) => set((s) => ({ certificates: typeof v === 'function' ? v(s.certificates) : v })),
@@ -166,7 +184,13 @@ export const useStore = create<AppState>((set, get) => ({
           tasks: s.tasks && s.tasks.length > 0 ? s.tasks : DEFAULT_TASKS,
           exams: s.exams && s.exams.length > 0 ? s.exams : DEFAULT_EXAMS,
           habits: s.habits && s.habits.length > 0 ? s.habits : DEFAULT_HABITS,
-          courses: s.courses && s.courses.length > 0 ? s.courses : DEFAULT_COURSES,
+          enrolledCourseIds: s.enrolledCourseIds || (s.courses || []).filter((c: any) => c.enrolled).map((c: any) => c.id) || ["c2"],
+          courses: s.courses && s.courses.length > 0
+            ? (s.courses as Course[]).map((c: Course) => ({
+                ...c,
+                enrolled: (s.enrolledCourseIds || []).includes(c.id) || c.enrolled,
+              }))
+            : COURSE_CATALOG.map(c => ({ ...c, enrolled: (s.enrolledCourseIds || []).includes(c.id) })),
           groups: s.groups && s.groups.length > 0 ? s.groups : DEFAULT_GROUPS,
           consultations: s.consultations && s.consultations.length > 0 ? s.consultations : DEFAULT_CONSULTATIONS,
           certificates: s.certificates && s.certificates.length > 0 ? s.certificates : DEFAULT_CERTIFICATES,
@@ -176,27 +200,20 @@ export const useStore = create<AppState>((set, get) => ({
           events: s.events && s.events.length > 0 ? s.events : DEFAULT_EVENTS,
         });
       }
+    } catch {
+      /* use defaults */
+    }
 
-      // Load real leaderboard from backend
-      try {
-        const lbRes = await api.request<{ leaderboard: any[] }>('/api/game/leaderboard');
-        if (lbRes.leaderboard) {
-          set({ leaderboard: lbRes.leaderboard });
-        }
-      } catch {
-        // Fallback to current leaderboard if API fails
+    try {
+      const lbRes = await api.request<{ leaderboard: any[] }>('/api/game/leaderboard');
+      if (lbRes.leaderboard) {
+        set({ leaderboard: lbRes.leaderboard });
       }
     } catch {
-      set({
-        tasks: DEFAULT_TASKS, exams: DEFAULT_EXAMS, habits: DEFAULT_HABITS,
-        courses: DEFAULT_COURSES, groups: DEFAULT_GROUPS,
-        consultations: DEFAULT_CONSULTATIONS, certificates: DEFAULT_CERTIFICATES,
-        portfolio: DEFAULT_PORTFOLIO, posts: DEFAULT_POSTS,
-        leaderboard: [], events: DEFAULT_EVENTS,
-      });
-    } finally {
-      set({ loaded: true, loading: false });
+      /* fallback */
     }
+
+    set({ loaded: true, loading: false });
   },
 
   saveState: () => {
@@ -207,7 +224,7 @@ export const useStore = create<AppState>((set, get) => ({
       const gp = s.gameProfile;
       api.saveState({
         xp: s.xp, level: s.level, coins: s.coins, userRole: s.userRole,
-        tasks: s.tasks, exams: s.exams, habits: s.habits, courses: s.courses,
+        tasks: s.tasks, exams: s.exams, habits: s.habits, enrolledCourseIds: s.enrolledCourseIds, courses: s.courses,
         groups: s.groups, consultations: s.consultations, certificates: s.certificates,
         portfolio: s.portfolio, posts: s.posts, leaderboard: s.leaderboard, events: s.events,
         ...(gp ? {

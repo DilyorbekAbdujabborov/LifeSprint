@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as api from '../api';
+import { useStore } from '../store';
+import Pandoo from './Pandoo';
 import {
   GraduationCap,
   BookOpen,
@@ -73,6 +75,8 @@ export default function Academics({
   const [speakingAnswer, setSpeakingAnswer] = useState('');
   const [examFinished, setExamFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [showPandoo, setShowPandoo] = useState(false);
+  const [wrongMcqAnswers, setWrongMcqAnswers] = useState<{ question: string; options: string[]; correct: number; userAnswer: number; explanation: string }[]>([]);
 
   // Course/Group management states
   const [courseTab, setCourseTab] = useState<'store' | 'my' | 'create'>('store');
@@ -114,14 +118,14 @@ export default function Academics({
       setCoins(res.totalCoins);
       setLevel(res.level);
     }
-    setCourses(prev => prev.map(c => c.id === course.id ? { ...c, enrolled: true } : c));
+    useStore.getState().enrollCourse(course.id);
     setBuySuccess(`Tabriklaymiz! "${course.title}" kursiga muvaffaqiyatli a'zo bo'ldingiz va dars guruhiga qo'shildingiz!`);
     setBuyError('');
     setTimeout(() => setBuySuccess(''), 5000);
   };
 
   const handleSimulateFreeEnroll = (course: Course) => {
-    setCourses(prev => prev.map(c => c.id === course.id ? { ...c, enrolled: true } : c));
+    useStore.getState().enrollCourse(course.id);
     setBuySuccess(`Simulyatsiya Granti: "${course.title}" kursiga BEPUL a'zo bo'ldingiz va guruhga qo'shildingiz!`);
     setBuyError('');
     setTimeout(() => setBuySuccess(''), 5000);
@@ -248,6 +252,8 @@ export default function Academics({
     setSpeakingAnswer('');
     setExamFinished(false);
     setAiFeedback('');
+    setShowPandoo(false);
+    setWrongMcqAnswers([]);
   };
 
   // Submit exam and payout XP based on gamification logic
@@ -256,13 +262,26 @@ export default function Academics({
 
     // Calculate MCQ scores if any
     let score = 0;
+    const wrongs: { question: string; options: string[]; correct: number; userAnswer: number; explanation: string }[] = [];
     if (activeMockType !== 'writing' && activeMockType !== 'speaking') {
       activeQuestions.forEach((q, idx) => {
         if (answers[idx] === q.correct) {
           score += 1;
+        } else {
+          wrongs.push({
+            question: q.q,
+            options: q.options,
+            correct: q.correct,
+            userAnswer: answers[idx] ?? -1,
+            explanation: q.explanation || "Pandoo tahlil qilmoqda...",
+          });
         }
       });
       setFinalScore(score);
+      setWrongMcqAnswers(wrongs);
+      if (activeQuestions.length > 0 && score / activeQuestions.length < 0.5) {
+        setShowPandoo(true);
+      }
     }
 
     // Reward calculation: Full Mock = 2000XP, Single Section = 500XP
@@ -1412,6 +1431,7 @@ export default function Academics({
                 id="close_results_btn"
                 onClick={() => {
                   setExamStarted(false);
+                  setShowPandoo(false);
                 }}
                 className="w-full bg-black hover:bg-gray-800 text-white font-bold text-xs py-3 rounded-2xl transition"
               >
@@ -1424,6 +1444,19 @@ export default function Academics({
         </div>
       )}
 
+      {showPandoo && (
+        <Pandoo
+          isOpen={showPandoo}
+          onClose={() => setShowPandoo(false)}
+          testTitle="Akademik Mock Imtihon"
+          wrongQuestions={wrongMcqAnswers}
+          correctCount={finalScore}
+          totalQuestions={activeQuestions.length}
+          setXp={setXp}
+          setCoins={setCoins}
+          setLevel={setLevel}
+        />
+      )}
     </div>
   );
 }

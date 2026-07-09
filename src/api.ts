@@ -7,7 +7,12 @@ export interface AuthUser {
   role: 'student' | 'teacher' | 'parent' | 'admin';
 }
 
-const TOKEN_KEY = 'lifesprint_token';
+const TOKEN_KEY = 'lifesprint_access_token';
+const REFRESH_KEY = 'lifesprint_refresh_token';
+const OLD_TOKEN_KEY = 'lifesprint_token';
+
+// Clear old token format
+localStorage.removeItem(OLD_TOKEN_KEY);
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -16,6 +21,43 @@ export function getToken(): string | null {
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_KEY);
+}
+
+export function setRefreshToken(token: string | null) {
+  if (token) localStorage.setItem(REFRESH_KEY, token);
+  else localStorage.removeItem(REFRESH_KEY);
+}
+
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefresh(): Promise<boolean> {
+  const rt = getRefreshToken();
+  if (!rt) return false;
+  try {
+    const res = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: rt }),
+    });
+    if (!res.ok) {
+      setRefreshToken(null);
+      setToken(null);
+      return false;
+    }
+    const data = await res.json();
+    setToken(data.accessToken);
+    setRefreshToken(data.refreshToken);
+    return true;
+  } catch {
+    setRefreshToken(null);
+    setToken(null);
+    return false;
+  }
 }
 
 export async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -30,6 +72,27 @@ export async function request<T>(url: string, options: RequestInit = {}): Promis
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401 && getRefreshToken()) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshPromise = tryRefresh().finally(() => { isRefreshing = false; refreshPromise = null; });
+      }
+      const refreshed = await refreshPromise;
+      if (refreshed) {
+        const newToken = getToken();
+        const retry = await fetch(url, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+            ...(options.headers || {}),
+          },
+        });
+        const retryData = await retry.json().catch(() => ({}));
+        if (!retry.ok) throw new Error((retryData as any).error || 'Server xatosi.');
+        return retryData as T;
+      }
+    }
     throw new Error((data as any).error || 'Server xatosi.');
   }
   return data as T;
@@ -41,21 +104,32 @@ export function register(payload: {
   password: string;
   role?: string;
 }) {
-  return request<{ token: string; user: AuthUser }>('/api/auth/register', {
+  return request<{ accessToken?: string; refreshToken?: string; token?: string; user: AuthUser }>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
+  }).then(res => {
+    // Handle both old (token) and new (accessToken) response formats
+    if (!res.accessToken && res.token) {
+      (res as any).accessToken = res.token;
+    }
+    return res as { accessToken: string; refreshToken: string; user: AuthUser };
   });
 }
 
 export function login(payload: { email: string; password: string }) {
-  return request<{ token: string; user: AuthUser }>('/api/auth/login', {
+  return request<{ accessToken?: string; refreshToken?: string; token?: string; user: AuthUser }>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
+  }).then(res => {
+    if (!res.accessToken && res.token) {
+      (res as any).accessToken = res.token;
+    }
+    return res as { accessToken: string; refreshToken: string; user: AuthUser };
   });
 }
 
-export function fetchMe() {
-  return request<{ user: AuthUser }>('/api/auth/me');
+export function fetchMe(signal?: AbortSignal) {
+  return request<{ user: AuthUser }>('/api/auth/me', { signal });
 }
 
 export function fetchState<T = any>() {
@@ -112,7 +186,7 @@ export function getAiRecommendations(context: string) {
   });
 }
 
-export function geminiAnalyze(prompt: string, systemInstruction?: string) {
+export function aiAnalyze(prompt: string, systemInstruction?: string) {
   return request<{ text: string }>('/api/gemini/analyze', {
     method: 'POST',
     body: JSON.stringify({ prompt, systemInstruction }),

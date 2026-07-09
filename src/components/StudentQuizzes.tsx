@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Trophy } from 'lucide-react';
 import * as api from '../api';
 import type { Group, LmsQuiz } from '../types';
+import Pandoo from './Pandoo';
 
 const quizData = [
   ["1. What is the antonym of 'Discipline' in academic contexts?", 'Chaos / Laziness', 'Self-control', 'Order', 'Commitment'],
@@ -27,19 +28,36 @@ export default function StudentQuizzes({
   const [activeQuizIndex, setActiveQuizIndex] = useState(0);
   const [quizScore, setQuizScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizWrongAnswers, setQuizWrongAnswers] = useState<{ question: string; options: string[]; correct: number; userAnswer: number; explanation: string }[]>([]);
+  const [showPandoo, setShowPandoo] = useState(false);
 
   const handleStartQuiz = (qz: LmsQuiz) => {
     setSelectedQuiz(qz);
     setActiveQuizIndex(0);
     setQuizScore(0);
     setQuizCompleted(false);
+    setQuizWrongAnswers([]);
+    setShowPandoo(false);
   };
 
   const handleAnswerQuizQuestion = (isCorrect: boolean) => {
     if (isCorrect) setQuizScore((p) => p + 1);
+    else {
+      setQuizWrongAnswers((prev) => [
+        ...prev,
+        {
+          question: quizData[activeQuizIndex][0],
+          options: quizData[activeQuizIndex].slice(1),
+          correct: 0,
+          userAnswer: -1,
+          explanation: "Pandoo tahlil qilmoqda...",
+        },
+      ]);
+    }
     if (activeQuizIndex < 4) {
       setActiveQuizIndex((p) => p + 1);
     } else {
+      const finalScore = quizScore + (isCorrect ? 1 : 0);
       setQuizCompleted(true);
       api.rewardAndUpdate(setXp, setCoins, setLevel, 'complete_group_quiz');
       if (activeGroupId && selectedQuiz) {
@@ -47,12 +65,13 @@ export default function StudentQuizzes({
           g.id === activeGroupId
             ? { ...g, quizzes: g.quizzes.map((q) =>
                 q.id === selectedQuiz.id
-                  ? { ...q, completed: true, score: quizScore + (isCorrect ? 1 : 0) }
+                  ? { ...q, completed: true, score: finalScore }
                   : q
               ) }
             : g
         ));
       }
+      if (finalScore / 5 < 0.5) setShowPandoo(true);
     }
   };
 
@@ -159,6 +178,20 @@ export default function StudentQuizzes({
             </div>
           )}
         </div>
+      )}
+
+      {showPandoo && (
+        <Pandoo
+          isOpen={showPandoo}
+          onClose={() => setShowPandoo(false)}
+          testTitle={selectedQuiz?.title || "Guruh Quiz"}
+          wrongQuestions={quizWrongAnswers}
+          correctCount={quizScore}
+          totalQuestions={5}
+          setXp={setXp}
+          setCoins={setCoins}
+          setLevel={setLevel}
+        />
       )}
     </div>
   );

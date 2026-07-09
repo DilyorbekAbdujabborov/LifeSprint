@@ -23,11 +23,11 @@ export const DEFAULT_EXAMS: Exam[] = [
   { id: "e3", name: "Milliy Sertifikat: Matematika", date: "2026-09-20", type: "Milliy", subject: "Matematika", targetScore: "A+" },
 ];
 
-export const DEFAULT_COURSES: Course[] = [
-  { id: "c1", title: "Frontend Dasturlash (React & Next.js)", description: "Zamonaviy veb-ilovalarni yaratishni amaliyotda o'rganing.", teacherName: "Boburjon G'ulomov", priceCoins: 120, priceMoney: 500000, enrolled: false, duration: "3 oy (24 dars)", lessonsCount: 24, rating: 4.9, ratingCount: 142, category: "Dasturlash", color: "indigo" },
-  { id: "c2", title: "Ingliz Tili: IELTS Prep (A1 dan B2)", description: "IELTS imtihoniga mukammal tayyorgarlik kursi.", teacherName: "Shahnoza Tursunaliyeva", priceCoins: 80, priceMoney: 350000, enrolled: true, duration: "2 oy (16 dars)", lessonsCount: 16, rating: 4.8, ratingCount: 96, category: "Xorijiy tillar", color: "emerald" },
-  { id: "c3", title: "Python va Sun'iy Intellekt Asoslari", description: "Python dasturlash tili asoslari, ma'lumotlar tahlili.", teacherName: "Sardorbek Kobilov", priceCoins: 100, priceMoney: 450000, enrolled: false, duration: "3 oy (20 dars)", lessonsCount: 20, rating: 4.7, ratingCount: 88, category: "Dasturlash", color: "amber" },
-  { id: "c4", title: "UI/UX Dizayn & Figma Professional", description: "Figma asbobida professional interfeyslar chizishni o'rganing.", teacherName: "Munira Salixova", priceCoins: 90, priceMoney: 400000, enrolled: false, duration: "2 oy (12 dars)", lessonsCount: 12, rating: 4.9, ratingCount: 75, category: "Dizayn", color: "rose" },
+export const COURSE_CATALOG: Omit<Course, 'enrolled'>[] = [
+  { id: "c1", title: "Frontend Dasturlash (React & Next.js)", description: "Zamonaviy veb-ilovalarni yaratishni amaliyotda o'rganing.", teacherName: "Boburjon G'ulomov", priceCoins: 120, priceMoney: 500000, duration: "3 oy (24 dars)", lessonsCount: 24, rating: 4.9, ratingCount: 142, category: "Dasturlash", color: "indigo" },
+  { id: "c2", title: "Ingliz Tili: IELTS Prep (A1 dan B2)", description: "IELTS imtihoniga mukammal tayyorgarlik kursi.", teacherName: "Shahnoza Tursunaliyeva", priceCoins: 80, priceMoney: 350000, duration: "2 oy (16 dars)", lessonsCount: 16, rating: 4.8, ratingCount: 96, category: "Xorijiy tillar", color: "emerald" },
+  { id: "c3", title: "Python va Sun'iy Intellekt Asoslari", description: "Python dasturlash tili asoslari, ma'lumotlar tahlili.", teacherName: "Sardorbek Kobilov", priceCoins: 100, priceMoney: 450000, duration: "3 oy (20 dars)", lessonsCount: 20, rating: 4.7, ratingCount: 88, category: "Dasturlash", color: "amber" },
+  { id: "c4", title: "UI/UX Dizayn & Figma Professional", description: "Figma asbobida professional interfeyslar chizishni o'rganing.", teacherName: "Munira Salixova", priceCoins: 90, priceMoney: 400000, duration: "2 oy (12 dars)", lessonsCount: 12, rating: 4.9, ratingCount: 75, category: "Dizayn", color: "rose" },
 ];
 
 export const DEFAULT_GROUPS: Group[] = [
