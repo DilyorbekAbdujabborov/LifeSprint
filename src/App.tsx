@@ -12,6 +12,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './components/Dashboard';
 import PandooChat from './components/PandooChat';
 import { Loader2, MessageCircle, X } from 'lucide-react';
+import * as api from './api';
+import type { Group, LmsTest, LmsQuiz, Lesson } from './types';
 
 const Discipline = lazy(() => import('./components/Discipline'));
 const Academics = lazy(() => import('./components/Academics'));
@@ -71,6 +73,9 @@ function AppMain() {
   } = useStore();
 
   const [pandooOpen, setPandooOpen] = useState(false);
+  const [fetchedHomeworks, setFetchedHomeworks] = useState<any[] | null>(null);
+  const [fetchedGroups, setFetchedGroups] = useState<Group[] | null>(null);
+  const [fetchedTests, setFetchedTests] = useState<any[] | null>(null);
   const synced = useRef(false);
 
   // One-time initial sync: hash → store, then allow store → hash
@@ -114,6 +119,23 @@ function AppMain() {
     };
   }, []);
 
+  // API fetches for sidebar tabs
+  useEffect(() => {
+    if (storeCurrentTab === 'student_myhomework') {
+      api.fetchStudentHomeworks().then(res => {
+        if (res.homeworks) setFetchedHomeworks(res.homeworks);
+      }).catch(() => {});
+    }
+  }, [storeCurrentTab]);
+
+  useEffect(() => {
+    if (storeCurrentTab === 'student_mygroups' || storeCurrentTab === 'student_mytests' || storeCurrentTab === 'student_myhomework') {
+      api.fetchStudentGroups().then(res => {
+        if (res.groups) setFetchedGroups(res.groups as Group[]);
+      }).catch(() => {});
+    }
+  }, [storeCurrentTab]);
+
   const renderView = () => {
     if (userRole === 'parent') return <ParentPanel habits={habits} xp={xp} />;
     if (!loaded && loading) return <div className="flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-[#7c3aed]" /></div>;
@@ -136,8 +158,9 @@ function AppMain() {
         return <EduTeam {...common} />;
       case 'student_mygroups': {
         const studentName = user?.name || 'Biloliddin Akramov';
-        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
-        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
+        const apiGroups = fetchedGroups ?? groups;
+        const approvedGroups = apiGroups.filter((g: Group) => g.students.includes(studentName));
+        const pendingGroups = apiGroups.filter((g: Group) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
         const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
         if (!hasAnyActivity) {
           return (
@@ -164,12 +187,13 @@ function AppMain() {
             </div>
           );
         }
-        return <StudentGroupsView groups={groups} studentGroups={approvedGroups} xp={xp} coins={coins} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} triggerStatus={(msg) => toast(msg, 'success')} isDarkMode={isDarkMode} />;
+        return <StudentGroupsView groups={apiGroups} studentGroups={approvedGroups} xp={xp} coins={coins} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} triggerStatus={(msg) => toast(msg, 'success')} isDarkMode={isDarkMode} />;
       }
       case 'student_mytests': {
         const studentName = user?.name || 'Biloliddin Akramov';
-        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
-        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
+        const apiGroups = fetchedGroups ?? groups;
+        const approvedGroups = apiGroups.filter((g: Group) => g.students.includes(studentName));
+        const pendingGroups = apiGroups.filter((g: Group) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
         const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
         if (!hasAnyActivity) {
           return (
@@ -199,57 +223,40 @@ function AppMain() {
         return <StudentTests studentGroups={approvedGroups} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} activeGroupId={null} />;
       }
       case 'student_myhomework': {
+        const apiGroups = fetchedGroups ?? groups;
         const studentName = user?.name || 'Biloliddin Akramov';
-        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
-        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
-        const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
-        if (!hasAnyActivity) {
-          return (
-            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
-              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
+        const approvedGroups = apiGroups.filter((g: Group) => g.students.includes(studentName));
+        const hasActivity = approvedGroups.length > 0;
+        const allHomeworks = fetchedHomeworks ?? approvedGroups.flatMap((g: Group) => g.homeworks.map((hw) => ({ ...hw, groupName: g.name })));
+        return (
+          <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+            <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
+            {!hasActivity && allHomeworks.length === 0 ? (
               <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
-                <p className="text-base font-bold">Iltimos, avval dars sotib oling</p>
-                <p className="text-xs mt-2">Kurslar do'koniga o'ting va o'zingizga mos kursni xarid qiling</p>
+                <p className="text-sm font-bold">Hali topshiriqlar yo'q</p>
+                <p className="text-xs mt-1">Kurslar do'koniga o'tib, dars sotib oling va topshiriqlarni kuzatib boring</p>
                 <button onClick={() => navigate('/mock-store')} className="mt-4 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer">
                   Kurslar do'koni
                 </button>
               </div>
-            </div>
-          );
-        }
-        if (approvedGroups.length === 0 && pendingGroups.length > 0) {
-          return (
-            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
-              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
-              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-amber-800/30 text-amber-400' : 'bg-white border-amber-200 text-amber-600'}`}>
-                <p className="text-base font-bold">Tasdiqlash kutilmoqda</p>
-                <p className="text-xs mt-2">Sizning xaridingiz o'qituvchi tomonidan tasdiqlanishi kutilmoqda. Bu biroz vaqt olishi mumkin.</p>
-              </div>
-            </div>
-          );
-        }
-        const allHomeworks = approvedGroups.flatMap((g) => g.homeworks.map((hw) => ({ ...hw, groupName: g.name })));
-        return (
-          <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
-            <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
-            {allHomeworks.length === 0 ? (
+            ) : allHomeworks.length === 0 ? (
               <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
                 <p className="text-sm font-bold">Hali topshiriqlar yo'q</p>
                 <p className="text-xs mt-1">O'qituvchingiz topshiriq qo'shishini kuting</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {allHomeworks.map((hw, idx) => (
+                {allHomeworks.map((hw: any, idx: number) => (
                   <div key={idx} className={`p-5 rounded-2xl border ${isDarkMode ? 'bg-[#151433] border-slate-800' : 'bg-white border-gray-200'} space-y-3`}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{hw.groupName}</span>
-                        <h3 className="text-sm font-bold text-white mt-1">{hw.title}</h3>
+                        {hw.groupName && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 ${isDarkMode ? '' : 'text-violet-600'}`}>{hw.groupName}</span>}
+                        <h3 className={`text-sm font-bold mt-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{hw.title}</h3>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                    <div className={`flex items-center gap-3 text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                       <span>Muddat: {hw.deadline || 'Belgilanmagan'}</span>
-                      <span>Holat: {hw.status === 'completed' ? 'Bajarilgan' : hw.status === 'pending' ? 'Kutilmoqda' : 'Yangi'}</span>
+                      <span>Holat: {hw.status === 'completed' ? '✅ Bajarilgan' : hw.status === 'pending' ? '⏳ Kutilmoqda' : '🆕 Yangi'}</span>
                     </div>
                     {hw.score !== undefined && (
                       <div className="text-xs font-bold text-amber-400">Ball: {hw.score}</div>
