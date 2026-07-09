@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, Mail, Lock, User, Loader2, GraduationCap } from 'lucide-react';
+import { Mail, Lock, User, Loader2, GraduationCap } from 'lucide-react';
+import logoSrc from '../img/logo.jpg';
 import { useAuth } from '../auth';
 import CustomSelect from './CustomSelect';
 
@@ -38,10 +39,8 @@ export default function AuthScreen() {
       </div>
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
-        <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[color:var(--brand)] shadow-lg shadow-sky-500/20">
-            <Sparkles className="w-8 h-8 text-white fill-white" />
-          </div>
+          <div className="mb-8 flex flex-col items-center">
+            <img src={logoSrc} alt="LifeSprint" className="mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg" />
           <h1 className="text-3xl font-black tracking-tight text-[color:var(--text)]">LifeSprint</h1>
           <p className="mt-1 text-sm font-bold text-[color:var(--text-muted)]">
             {mode === 'login' ? 'Hisobingizga kiring' : 'Yangi hisob yarating'}
