@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense, useState, useRef } from 'react';
 import { HashRouter, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth';
-import { ToastProvider } from './toast';
+import { ToastProvider, useToast } from './toast';
 import { useStore } from './store';
 import AuthScreen from './components/AuthScreen';
 import Navigation from './components/Navigation';
@@ -60,6 +60,7 @@ function AppMain() {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const storeCurrentTab = useStore((s) => s.currentTab);
   const {
@@ -163,8 +164,7 @@ function AppMain() {
             </div>
           );
         }
-        const triggerStatus = (msg: string) => {};
-        return <StudentGroupsView groups={groups} studentGroups={approvedGroups} xp={xp} coins={coins} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} triggerStatus={triggerStatus} isDarkMode={isDarkMode} />;
+        return <StudentGroupsView groups={groups} studentGroups={approvedGroups} xp={xp} coins={coins} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} triggerStatus={(msg) => toast(msg, 'success')} isDarkMode={isDarkMode} />;
       }
       case 'student_mytests': {
         const studentName = user?.name || 'Biloliddin Akramov';

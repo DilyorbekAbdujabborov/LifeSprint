@@ -236,7 +236,7 @@ export default function Header() {
                   <User className="w-4 h-4" /> Profil
                 </button>
                 <button
-                  onClick={() => { setProfileOpen(false); setCurrentTab('panels'); }}
+                  onClick={() => { setProfileOpen(false); toast("Sozlamalar tez kunda qo'shiladi", 'info'); }}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-bold text-[color:var(--text-muted)] transition-all hover:bg-[color:var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring)]"
                   type="button"
                 >

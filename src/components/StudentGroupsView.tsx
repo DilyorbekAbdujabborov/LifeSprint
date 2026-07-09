@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageSquare, Send, Play, Check, Video, Star, Users2, Calendar } from 'lucide-react';
 import * as api from '../api';
 import type { Group, Lesson } from '../types';
@@ -14,7 +14,17 @@ interface Props {
 }
 
 export default function StudentGroupsView(props: Props) {
-  const { groups, studentGroups, setXp, setCoins, setLevel, setGroups, triggerStatus } = props;
+  const { groups: propGroups, studentGroups: propStudentGroups, setXp, setCoins, setLevel, setGroups, triggerStatus } = props;
+  const [fetchedGroups, setFetchedGroups] = useState<Group[] | null>(null);
+
+  useEffect(() => {
+    api.fetchStudentGroups().then(res => {
+      if (res.groups) setFetchedGroups(res.groups as Group[]);
+    }).catch(() => {});
+  }, []);
+
+  const groups = fetchedGroups ?? propGroups;
+  const studentGroups = fetchedGroups ?? propStudentGroups;
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [chatInputs, setChatInputs] = useState<Record<string, string>>({});

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import {
   Swords, Puzzle, Mic, Search, GraduationCap, Clock, Globe, Brain, Users, ArrowLeft, Flame,
 } from 'lucide-react';
+import AiBossBattle from './AiBossBattle';
 
 const GAMES = [
-  { id: 'boss_battle', title: 'AI Boss Battle', icon: Swords, gradient: 'from-red-600 via-orange-500 to-yellow-500', description: 'AI bilan bilim jangida kurashing! Har bir to\'g\'ri javob bilan bossga zarba bering va darajalar bo\'ylab yuksaling.' },
+  { id: 'boss_battle', title: 'AI Boss Battle', icon: Swords, gradient: 'from-red-600 via-orange-500 to-yellow-500', description: 'AI bilan bilim jangida kurashing! 5 xil bossni yengib, eng kuchli jangchi bo\'ling.', status: 'live' },
   { id: 'escape_room', title: 'AI Escape Room', icon: Puzzle, gradient: 'from-amber-600 via-yellow-500 to-orange-400', description: 'Mantiqiy topishmoqlarni yechib, virtual xonadan chiqish yo\'lini toping. Vaqtni yengib, eng tezkor qochishni uddalang!' },
   { id: 'roleplay', title: 'AI Rolliy O\'yin', icon: Mic, gradient: 'from-purple-600 via-pink-500 to-rose-400', description: 'AI bilan real hayotiy stsenariylar asosida suhbatlashing. Ingliz tilini amaliyotda o\'rganishning eng qiziqarli usuli.' },
   { id: 'detective', title: 'AI Detective', icon: Search, gradient: 'from-indigo-600 via-blue-500 to-cyan-400', description: 'Dallilarni tahlil qilib, murakkab jinoyatlarni fosh eting. Har bir yangi bosqichda mantiqiy fikrlash qobiliyatingizni sinang.' },
@@ -21,13 +22,18 @@ export default function AiAdventures() {
   if (selected) {
     return (
       <div className="space-y-4">
-        <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer">
+        <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-all cursor-pointer">
           <ArrowLeft className="w-4 h-4" /> Ortga
         </button>
 
         {(() => {
           const game = GAMES.find(g => g.id === selected);
           if (!game) return null;
+
+          if (selected === 'boss_battle') {
+            return <AiBossBattle />;
+          }
+
           const Icon = game.icon;
           return (
             <div className={`p-8 sm:p-10 rounded-3xl bg-gradient-to-br ${game.gradient} text-center space-y-5 shadow-2xl`}>
@@ -61,11 +67,12 @@ export default function AiAdventures() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {GAMES.map(game => {
         const Icon = game.icon;
+        const isLive = game.status === 'live';
         return (
           <button
             key={game.id}
             onClick={() => setSelected(game.id)}
-            className={`p-5 rounded-2xl bg-gradient-to-br ${game.gradient} text-left transition-all hover:scale-[1.02] hover:shadow-xl cursor-pointer shadow-lg`}
+            className={`p-5 rounded-2xl bg-gradient-to-br ${game.gradient} text-left transition-all hover:scale-[1.02] hover:shadow-xl cursor-pointer shadow-lg ${isLive ? 'ring-2 ring-emerald-400/50 ring-offset-1 ring-offset-transparent' : ''}`}
           >
             <div className="flex items-start gap-3">
               <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
@@ -73,7 +80,9 @@ export default function AiAdventures() {
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <h4 className="text-sm font-black text-white drop-shadow-sm">{game.title}</h4>
-                <p className="text-[11px] text-white/60 mt-0.5">ishlov olib borilmoqda</p>
+                <p className={`text-[11px] mt-0.5 ${isLive ? 'text-emerald-300 font-bold' : 'text-white/60'}`}>
+                  {isLive ? 'O\'ynash mumkin! 🎮' : 'ishlov olib borilmoqda'}
+                </p>
               </div>
             </div>
           </button>

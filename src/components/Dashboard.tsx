@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Award, BookOpen } from 'lucide-react';
 import { EmptyState } from './Skeleton';
-import type { AuthUser } from '../api';
+import * as api from '../api';
 import type { Course, ConsultationSession, LmsCertificate, Group, Task, Exam } from '../types';
 import StudentOverview from './StudentOverview';
 import StudentGroupsView from './StudentGroupsView';
@@ -19,7 +19,7 @@ interface DashboardProps {
   groups: Group[]; setGroups: React.Dispatch<React.SetStateAction<Group[]>>;
   consultations: ConsultationSession[]; setConsultations: React.Dispatch<React.SetStateAction<ConsultationSession[]>>;
   certificates: LmsCertificate[]; setCertificates: React.Dispatch<React.SetStateAction<LmsCertificate[]>>;
-  user: AuthUser | null; userRole: 'student' | 'teacher' | 'parent' | 'admin';
+  user: api.AuthUser | null; userRole: 'student' | 'teacher' | 'parent' | 'admin';
   setCurrentTab?: (tab: string) => void; isDarkMode: boolean;
 }
 
@@ -32,6 +32,14 @@ export default function Dashboard({
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
   const triggerStatus = (msg: string) => { setStatusMsg(msg); setTimeout(() => setStatusMsg(''), 4000); };
+  const [fetchedHomeworks, setFetchedHomeworks] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    api.fetchStudentHomeworks().then(res => {
+      if (res.homeworks) setFetchedHomeworks(res.homeworks);
+    }).catch(() => {});
+  }, []);
+
   const studentGroups = groups.filter((g) => g.students.includes(user?.name || 'Biloliddin Akramov'));
   const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(user?.name || 'Biloliddin Akramov'));
 
@@ -78,7 +86,15 @@ export default function Dashboard({
               studentGroups={studentGroups} groups={groups} courses={courses}
               setXp={setXp} setCoins={setCoins} setLevel={setLevel}
               setGroups={setGroups} setCourses={setCourses}
-              onNavigate={(tab) => setStudentTab(tab as any)}
+              onNavigate={(tab) => {
+                if (tab === 'mock_store' && setCurrentTab) {
+                  setCurrentTab('mock_store');
+                } else if (tab === 'ai' && setCurrentTab) {
+                  setCurrentTab('consulting');
+                } else {
+                  setStudentTab(tab as any);
+                }
+              }}
               onEnterGroup={(id) => { setActiveGroupId(id); setStudentTab('groups'); }}
               triggerStatus={triggerStatus} isDarkMode={isDarkMode}
             />
@@ -111,25 +127,28 @@ export default function Dashboard({
           {studentTab === 'homeworks' && (
             <div className="space-y-6 text-left">
               <h2 className="text-xl font-bold text-gray-950 dark:text-white uppercase tracking-wider">Mening faol uy vazifalarim</h2>
-              {studentGroups.flatMap((g) => g.homeworks).length === 0 ? (
-                <EmptyState icon={BookOpen} title="Vazifalar yo'q" description="Hali hech qanday uy vazifasi berilmagan." />
-              ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {studentGroups.flatMap((g) => g.homeworks.map((hw) => ({ ...hw, groupName: g.name }))).map((hw) => (
-                    <div key={hw.id} className="p-6 bg-white dark:bg-[#151433] rounded-3xl border border-gray-100 dark:border-slate-800 flex flex-wrap justify-between items-center gap-4">
-                      <div>
-                        <h3 className="font-bold text-sm text-gray-900 dark:text-white">{hw.title}</h3>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Guruh: {hw.groupName} &bull; Muddat: <strong className="text-rose-500">{hw.deadline}</strong>
-                        </p>
+              {(() => {
+                const homeworks = fetchedHomeworks ?? studentGroups.flatMap((g) => g.homeworks.map((hw) => ({ ...hw, groupName: g.name })));
+                return homeworks.length === 0 ? (
+                  <EmptyState icon={BookOpen} title="Vazifalar yo'q" description="Hali hech qanday uy vazifasi berilmagan." />
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {homeworks.map((hw: any) => (
+                      <div key={hw.id} className="p-6 bg-white dark:bg-[#151433] rounded-3xl border border-gray-100 dark:border-slate-800 flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                          <h3 className="font-bold text-sm text-gray-900 dark:text-white">{hw.title}</h3>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Guruh: {hw.groupName} &bull; Muddat: <strong className="text-rose-500">{hw.deadline}</strong>
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${hw.status === 'completed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                          {hw.status === 'completed' ? `${hw.score} ball` : 'Kutilmoqda'}
+                        </span>
                       </div>
-                      <span className={`px-3 py-1 text-[10px] font-bold rounded-full ${hw.status === 'completed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
-                        {hw.status === 'completed' ? `${hw.score} ball` : 'Kutilmoqda'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
 

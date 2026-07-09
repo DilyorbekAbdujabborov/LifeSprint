@@ -108,4 +108,48 @@ router.post("/enroll-course", authMiddleware, async (req: AuthedRequest, res: Re
   res.json({ ok: true });
 });
 
+router.get("/enrolled-courses", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const state = await loadRaw(req.userId!);
+  const enrolledCourseIds: string[] = state.enrolledCourseIds || [];
+  const courses = (state.courses || []).filter((c: any) =>
+    c.enrolled || enrolledCourseIds.includes(c.id)
+  );
+  res.json({ courses, enrolledCourseIds });
+});
+
+router.get("/student-groups", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const [state, userRow] = await Promise.all([
+    loadRaw(req.userId!),
+    db.get("SELECT name FROM users WHERE id = $1", [req.userId!]),
+  ]);
+  const userName = (userRow as any)?.name || '';
+  const allGroups: any[] = state.groups || [];
+  const groups = allGroups.filter((g: any) => g.students?.includes(userName));
+  res.json({ groups, userName });
+});
+
+router.get("/student-tests", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const [state, userRow] = await Promise.all([
+    loadRaw(req.userId!),
+    db.get("SELECT name FROM users WHERE id = $1", [req.userId!]),
+  ]);
+  const userName = (userRow as any)?.name || '';
+  const allGroups: any[] = state.groups || [];
+  const groups = allGroups.filter((g: any) => g.students?.includes(userName));
+  const tests = groups.flatMap((g: any) => (g.tests || []).map((t: any) => ({ ...t, groupName: g.name, groupId: g.id })));
+  res.json({ tests, groups });
+});
+
+router.get("/student-homeworks", authMiddleware, async (req: AuthedRequest, res: Response) => {
+  const [state, userRow] = await Promise.all([
+    loadRaw(req.userId!),
+    db.get("SELECT name FROM users WHERE id = $1", [req.userId!]),
+  ]);
+  const userName = (userRow as any)?.name || '';
+  const allGroups: any[] = state.groups || [];
+  const groups = allGroups.filter((g: any) => g.students?.includes(userName));
+  const homeworks = groups.flatMap((g: any) => (g.homeworks || []).map((h: any) => ({ ...h, groupName: g.name, groupId: g.id })));
+  res.json({ homeworks, groups });
+});
+
 export default router;

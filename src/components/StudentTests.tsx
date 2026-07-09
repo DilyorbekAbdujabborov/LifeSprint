@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import * as api from '../api';
 import type { Group, LmsTest } from '../types';
@@ -22,8 +22,18 @@ interface StudentTestsProps {
 }
 
 export default function StudentTests({
-  studentGroups, setXp, setCoins, setLevel, setGroups, activeGroupId,
+  studentGroups: propStudentGroups, setXp, setCoins, setLevel, setGroups, activeGroupId,
 }: StudentTestsProps) {
+  const [fetchedGroups, setFetchedGroups] = useState<Group[] | null>(null);
+
+  useEffect(() => {
+    api.fetchStudentTests().then(res => {
+      if (res.groups) setFetchedGroups(res.groups as Group[]);
+    }).catch(() => {});
+  }, []);
+
+  const studentGroups = fetchedGroups ?? propStudentGroups;
+
   const [selectedTest, setSelectedTest] = useState<LmsTest | null>(null);
   const [activeTestIndex, setActiveTestIndex] = useState(0);
   const [testScore, setTestScore] = useState(0);

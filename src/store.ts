@@ -135,15 +135,18 @@ export const useStore = create<AppState>((set, get) => ({
       enrolledCourseIds: courses.filter(c => c.enrolled).map(c => c.id),
     };
   }),
-  enrollCourse: (courseId) => set((s) => {
-    const newIds = s.enrolledCourseIds.includes(courseId)
-      ? s.enrolledCourseIds
-      : [...s.enrolledCourseIds, courseId];
-    return {
-      enrolledCourseIds: newIds,
-      courses: s.courses.map(c => ({ ...c, enrolled: newIds.includes(c.id) })),
-    };
-  }),
+  enrollCourse: (courseId) => {
+    api.enrollCourse(courseId).catch(() => {});
+    set((s) => {
+      const newIds = s.enrolledCourseIds.includes(courseId)
+        ? s.enrolledCourseIds
+        : [...s.enrolledCourseIds, courseId];
+      return {
+        enrolledCourseIds: newIds,
+        courses: s.courses.map(c => ({ ...c, enrolled: newIds.includes(c.id) })),
+      };
+    });
+  },
   setGroups: (v) => set((s) => ({ groups: typeof v === 'function' ? v(s.groups) : v })),
   setConsultations: (v) => set((s) => ({ consultations: typeof v === 'function' ? v(s.consultations) : v })),
   setCertificates: (v) => set((s) => ({ certificates: typeof v === 'function' ? v(s.certificates) : v })),

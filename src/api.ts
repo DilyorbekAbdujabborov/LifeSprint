@@ -45,8 +45,10 @@ async function tryRefresh(): Promise<boolean> {
       body: JSON.stringify({ refreshToken: rt }),
     });
     if (!res.ok) {
-      setRefreshToken(null);
-      setToken(null);
+      if (res.status === 401 || res.status === 403) {
+        setRefreshToken(null);
+        setToken(null);
+      }
       return false;
     }
     const data = await res.json();
@@ -54,8 +56,6 @@ async function tryRefresh(): Promise<boolean> {
     setRefreshToken(data.refreshToken);
     return true;
   } catch {
-    setRefreshToken(null);
-    setToken(null);
     return false;
   }
 }
@@ -177,6 +177,22 @@ export function enrollCourse(courseId: string) {
     method: 'POST',
     body: JSON.stringify({ courseId }),
   });
+}
+
+export function fetchEnrolledCourses() {
+  return request<{ courses: any[]; enrolledCourseIds: string[] }>('/api/actions/enrolled-courses');
+}
+
+export function fetchStudentGroups() {
+  return request<{ groups: any[]; userName: string }>('/api/actions/student-groups');
+}
+
+export function fetchStudentTests() {
+  return request<{ tests: any[]; groups: any[] }>('/api/actions/student-tests');
+}
+
+export function fetchStudentHomeworks() {
+  return request<{ homeworks: any[]; groups: any[] }>('/api/actions/student-homeworks');
 }
 
 export function getAiRecommendations(context: string) {
