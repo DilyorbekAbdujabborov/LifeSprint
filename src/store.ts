@@ -204,11 +204,27 @@ export const useStore = create<AppState>((set, get) => ({
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       const s = get();
+      const gp = s.gameProfile;
       api.saveState({
         xp: s.xp, level: s.level, coins: s.coins, userRole: s.userRole,
         tasks: s.tasks, exams: s.exams, habits: s.habits, courses: s.courses,
         groups: s.groups, consultations: s.consultations, certificates: s.certificates,
         portfolio: s.portfolio, posts: s.posts, leaderboard: s.leaderboard, events: s.events,
+        ...(gp ? {
+          titles: gp.titles, quests: gp.quests,
+          achievementsUnlocked: gp.achievementsUnlocked,
+          totalQuestsCompleted: gp.totalQuestsCompleted,
+          bestStreak: gp.bestStreak,
+          pomodorosDone: gp.pomodorosDone,
+          aiChats: gp.aiChats, lessonsFinished: gp.lessonsFinished,
+          quizzesPassed: gp.quizzesPassed, testsPassed: gp.testsPassed,
+          habitsDone: gp.habitsDone, postsCreated: gp.postsCreated,
+          coursesCompleted: gp.coursesCompleted,
+          consultationsBooked: gp.consultationsBooked,
+          groupsJoined: gp.groupsJoined,
+          seasonPassLevel: gp.seasonPassLevel,
+          seasonPassXp: gp.seasonPassXp,
+        } : {}),
       }).catch(() => {});
     }, 800);
   },

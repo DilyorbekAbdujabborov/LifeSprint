@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Award, BookOpen } from 'lucide-react';
-import * as api from '../api';
 import { EmptyState } from './Skeleton';
 import type { AuthUser } from '../api';
 import type { Course, ConsultationSession, LmsCertificate, Group, Task, Exam } from '../types';
 import StudentOverview from './StudentOverview';
 import StudentGroupsView from './StudentGroupsView';
-import StudentMooc from './StudentMooc';
 import StudentQuizzes from './StudentQuizzes';
 import StudentTests from './StudentTests';
 import TeacherPanel from './TeacherPanel';
@@ -30,79 +28,17 @@ export default function Dashboard({
   courses, setCourses, groups, setGroups, consultations, setConsultations,
   certificates, setCertificates, user, userRole, setCurrentTab, isDarkMode,
 }: DashboardProps) {
-  const [studentTab, setStudentTab] = useState<'overview' | 'mock_store' | 'groups' | 'quizzes' | 'tests' | 'reyting' | 'homeworks' | 'certificates'>('overview');
+  const [studentTab, setStudentTab] = useState<'overview' | 'groups' | 'quizzes' | 'tests' | 'homeworks' | 'certificates'>('overview');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('');
   const triggerStatus = (msg: string) => { setStatusMsg(msg); setTimeout(() => setStatusMsg(''), 4000); };
   const studentGroups = groups.filter((g) => g.students.includes(user?.name || 'Biloliddin Akramov'));
   const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(user?.name || 'Biloliddin Akramov'));
 
-  const handleBuyCourse = async (course: Course) => {
-    if (course.enrolled) { triggerStatus('Siz ushbu kursga allaqachon a\'zo bo\'lgansiz!'); return; }
-    if (coins < course.priceCoins) { triggerStatus(`Tanga yetarli emas! Yana ${course.priceCoins - coins} tanga kerak.`); return; }
-
-    try {
-      api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
-      await api.enrollCourse(course.id);
-
-      setCourses((prev) => prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c)));
-      const studentName = user?.name || 'Biloliddin Akramov';
-
-      setGroups((prev) => {
-        // Check if group exists for this course
-        const existingGroup = prev.find((g) => g.courseId === course.id);
-
-        if (existingGroup && !existingGroup.students.includes(studentName)) {
-          // Add student to existing group
-          return prev.map((g) => {
-            if (g.courseId === course.id) {
-              return {
-                ...g,
-                students: [...g.students, studentName],
-                pendingStudents: [...g.pendingStudents, studentName],
-                studentsCount: g.studentsCount + 1
-              };
-            }
-            return g;
-          });
-        } else if (!existingGroup) {
-          // Create new group for this course
-          const newGroup: typeof groups[0] = {
-            id: `g_${Date.now()}`,
-            name: `${course.title} Group`,
-            teacherName: course.teacherName,
-            courseTitle: course.title,
-            courseId: course.id,
-            studentsCount: 1,
-            students: [studentName],
-            pendingStudents: [studentName],
-            courseDays: [],
-            courseTime: '',
-            rating: course.rating,
-            progress: 0,
-            lessons: [],
-            homeworks: [],
-            quizzes: [],
-            tests: [],
-            announcements: [],
-            files: [],
-          };
-          return [...prev, newGroup];
-        }
-
-        return prev;
-      });
-      triggerStatus(`Tabriklaymiz! "${course.title}" kursiga qo'shildingiz!`);
-    } catch (err) {
-      triggerStatus('Xato: Kurs sotib olishda muammo yuz berdi.');
-    }
-  };
-
   const studentTabs = [
     { id: 'overview', label: 'Bosh Sahifa' }, { id: 'groups', label: 'Mening Guruhlarim' },
-    { id: 'mock_store', label: "Mock Do'koni" }, { id: 'quizzes', label: 'Quizlar' },
+    { id: 'quizzes', label: 'Quizlar' },
     { id: 'tests', label: 'Imtihon & Testlar' }, { id: 'homeworks', label: 'Topshiriqlar' },
-    { id: 'reyting', label: 'Reyting' },
     { id: 'certificates', label: 'Sertifikatlar' },
   ] as const;
 
@@ -156,14 +92,6 @@ export default function Dashboard({
             />
           )}
 
-          {studentTab === 'mock_store' && (
-            <StudentMooc
-              courses={courses}
-              coins={coins}
-              onBuyCourse={handleBuyCourse}
-            />
-          )}
-
           {studentTab === 'quizzes' && (
             <StudentQuizzes
               studentGroups={studentGroups}
@@ -202,30 +130,6 @@ export default function Dashboard({
                   ))}
                 </div>
               )}
-            </div>
-          )}
-
-          {studentTab === 'reyting' && (
-            <div className="p-6 bg-white dark:bg-[#151433] rounded-3xl border border-gray-100 dark:border-slate-800 space-y-4 text-left">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Reyting</h2>
-              <div className="divide-y divide-gray-100 dark:divide-slate-800">
-                {[
-                  { rank: 1, name: 'Biloliddin A.', xp: xp, school: 'Prezident Maktabi' },
-                  { rank: 2, name: 'Saidabror A.', xp: 9836, school: 'Prezident Maktabi' },
-                  { rank: 3, name: 'Bunyodbek N.', xp: 9249, school: 'Prezident Maktabi' },
-                ].map((u) => (
-                  <div key={u.rank} className="flex items-center justify-between py-3 px-3 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 font-mono font-bold text-xs text-gray-500" aria-label={`${u.rank}-o'rin`}>#{u.rank}</span>
-                      <div>
-                        <p className="text-xs font-bold text-gray-800 dark:text-white">{u.name}</p>
-                        <p className="text-[10px] text-gray-400">{u.school}</p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-amber-500 font-mono">{u.xp.toLocaleString()} XP</span>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 

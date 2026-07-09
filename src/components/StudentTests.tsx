@@ -57,9 +57,9 @@ export default function StudentTests({
   };
 
   const testCategories = [
-    { category: 'Yakuniy', color: 'rose', label: 'Yakuniy imtihonlar' },
-    { category: 'Amaliy', color: 'blue', label: 'Amaliy Testlar' },
-    { category: 'Sertifikat', color: 'purple', label: 'Sertifikat testlari' },
+    { category: 'Yakuniy', label: 'Yakuniy imtihonlar', headClass: 'text-rose-500', cardClass: 'bg-rose-50/25 dark:bg-rose-950/10', btnClass: 'bg-rose-600' },
+    { category: 'Amaliy', label: 'Amaliy Testlar', headClass: 'text-blue-500', cardClass: 'bg-blue-50/25 dark:bg-blue-950/10', btnClass: 'bg-blue-600' },
+    { category: 'Sertifikat', label: 'Sertifikat testlari', headClass: 'text-purple-500', cardClass: 'bg-purple-50/25 dark:bg-purple-950/10', btnClass: 'bg-purple-600' },
   ];
 
   return (
@@ -68,16 +68,16 @@ export default function StudentTests({
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-950 dark:text-white uppercase tracking-wider">Yakuniy, Amaliy va Sertifikat Testlari</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testCategories.map(({ category, color, label }) => (
+            {testCategories.map(({ category, label, headClass, cardClass, btnClass }) => (
               <div key={category} className="p-5 bg-white dark:bg-[#151433] rounded-3xl border border-gray-100 dark:border-slate-800 space-y-4">
-                <h3 className={`font-bold text-xs text-${color}-500 uppercase tracking-widest border-b pb-2`}>{label}</h3>
+                <h3 className={`font-bold text-xs uppercase tracking-widest border-b pb-2 ${headClass}`}>{label}</h3>
                 <div className="space-y-2">
                   {studentGroups.flatMap((g) => g.tests.filter((t) => t.category === category)).map((test) => (
-                    <div key={test.id} className={`p-3 bg-${color}-50/25 dark:bg-${color}-950/10 rounded-xl space-y-2`}>
+                    <div key={test.id} className={`p-3 rounded-xl space-y-2 ${cardClass}`}>
                       <h4 className="text-xs font-bold">{test.title}</h4>
                       <button
                         onClick={() => handleStartTest(test)}
-                        className={`w-full py-1 bg-${color}-600 text-white rounded-lg text-[9px] font-bold uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-${color}-500`}
+                        className={`w-full py-1 text-white rounded-lg text-[9px] font-bold uppercase focus-visible:outline-none focus-visible:ring-2 ${btnClass}`}
                         type="button"
                       >
                         Boshlash

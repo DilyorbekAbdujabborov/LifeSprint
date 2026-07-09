@@ -16,8 +16,10 @@ import {
 	Star,
 	Clock,
 	Video,
+	X,
 } from 'lucide-react';
 import { Course, Group } from '../types';
+import logoImg from '../img/logo.jpg';
 
 interface MockStoreProps {
 	courses: Course[];
@@ -30,6 +32,7 @@ interface MockStoreProps {
 	setXp: React.Dispatch<React.SetStateAction<number>>;
 	setLevel: React.Dispatch<React.SetStateAction<number>>;
 	userRole: 'student' | 'teacher' | 'parent' | 'admin';
+	isDarkMode?: boolean;
 }
 
 export default function MockStore({
@@ -43,10 +46,12 @@ export default function MockStore({
 	setXp,
 	setLevel,
 	userRole,
+	isDarkMode,
 }: MockStoreProps) {
 	// Status & notifications
 	const [statusMsg, setStatusMsg] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+	const [showGrantModal, setShowGrantModal] = useState<Course | null>(null);
 
 	const triggerStatus = (msg: string) => {
 		setStatusMsg(msg);
@@ -58,92 +63,23 @@ export default function MockStore({
 		setTimeout(() => setErrorMsg(''), 6000);
 	};
 
-	// Buy course handler
-	const handleBuy = (course: Course) => {
-		if (course.enrolled) {
-			triggerStatus(`Siz ushbu kursga allaqachon a'zo bo'lgansiz!`);
-			return;
-		}
+	const handleGrantConfirm = () => {
+		if (!showGrantModal) return;
+		const course = showGrantModal;
 
-		if (coins < course.priceCoins) {
-			// Free Simulating Grant!
-			const grantConfirm = window.confirm(
-				`Sizda tangalar yetarli emas! Lekin xavotirlanmang, "LifeSprint" tizimi orqali 100% BEPUL Grant (Simulyatsiya) yordamida kursni faollashtirishni xohlaysizmi?`
-			);
-			if (grantConfirm) {
-				// Enrol for free as mock demo
-				setCourses((prev) =>
-					prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c))
-				);
-
-				// Add to group (both students and pending so it shows in "Mening darslarim")
-				const studentName = 'Biloliddin Akramov';
-				setGroups((prev) => {
-					const existingGroup = prev.find((g) => g.courseId === course.id);
-					if (existingGroup && !existingGroup.students.includes(studentName)) {
-						return prev.map((g) => {
-							if (g.courseId === course.id) {
-								return {
-									...g,
-									students: [...g.students, studentName],
-									pendingStudents: [...g.pendingStudents, studentName],
-									studentsCount: g.studentsCount + 1,
-								};
-							}
-							return g;
-						});
-					} else if (!existingGroup) {
-						const newGroup = {
-							id: `g_${Date.now()}`,
-							name: `${course.title} Guruh`,
-							teacherName: course.teacherName,
-							courseTitle: course.title,
-							courseId: course.id,
-							studentsCount: 1,
-							students: [studentName],
-							pendingStudents: [studentName],
-							courseDays: [],
-							courseTime: '',
-							rating: course.rating,
-							progress: 0,
-							lessons: [],
-							homeworks: [],
-							quizzes: [],
-							tests: [],
-							announcements: [],
-							files: [],
-						};
-						return [...prev, newGroup];
-					}
-					return prev;
-				});
-
-			api.rewardAndUpdate(setXp, null, setLevel, 'grant_enrollment');
-			triggerStatus(
-					`Tabriklaymiz! Sizga maxsus grant berildi! "${course.title}" kursi muvaffaqiyatli faollashtirildi. (+100 XP)`
-				);
-			}
-			return;
-		}
-
-		// Normal purchase with coins
-		api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
 		setCourses((prev) =>
 			prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c))
 		);
 
-		// Add to group (both students and pending so it shows in "Mening darslarim")
 		const studentName = 'Biloliddin Akramov';
 		setGroups((prev) => {
 			const existingGroup = prev.find((g) => g.courseId === course.id);
-			if (existingGroup && !existingGroup.students.includes(studentName)) {
+			if (existingGroup && !existingGroup.pendingStudents.includes(studentName)) {
 				return prev.map((g) => {
 					if (g.courseId === course.id) {
 						return {
 							...g,
-							students: [...g.students, studentName],
 							pendingStudents: [...g.pendingStudents, studentName],
-							studentsCount: g.studentsCount + 1,
 						};
 					}
 					return g;
@@ -155,8 +91,73 @@ export default function MockStore({
 					teacherName: course.teacherName,
 					courseTitle: course.title,
 					courseId: course.id,
-					studentsCount: 1,
-					students: [studentName],
+					studentsCount: 0,
+					students: [],
+					pendingStudents: [studentName],
+					courseDays: [],
+					courseTime: '',
+					rating: course.rating,
+					progress: 0,
+					lessons: [],
+					homeworks: [],
+					quizzes: [],
+					tests: [],
+					announcements: [],
+					files: [],
+				};
+				return [...prev, newGroup];
+			}
+			return prev;
+		});
+
+		api.rewardAndUpdate(setXp, null, setLevel, 'grant_enrollment');
+		triggerStatus(
+			`Tabriklaymiz! Sizga maxsus grant berildi! "${course.title}" kursi muvaffaqiyatli faollashtirildi. (+100 XP)`
+		);
+		setShowGrantModal(null);
+	};
+
+	// Buy course handler
+	const handleBuy = (course: Course) => {
+		if (course.enrolled) {
+			triggerStatus(`Siz ushbu kursga allaqachon a'zo bo'lgansiz!`);
+			return;
+		}
+
+		if (coins < course.priceCoins) {
+			setShowGrantModal(course);
+			return;
+		}
+
+		// Normal purchase with coins
+		api.rewardAndUpdate(setXp, setCoins, setLevel, 'purchase_course', { priceCoins: course.priceCoins });
+		setCourses((prev) =>
+			prev.map((c) => (c.id === course.id ? { ...c, enrolled: true } : c))
+		);
+
+		// Add to pendingStudents — teacher must approve
+		const studentName = 'Biloliddin Akramov';
+		setGroups((prev) => {
+			const existingGroup = prev.find((g) => g.courseId === course.id);
+			if (existingGroup && !existingGroup.pendingStudents.includes(studentName)) {
+				return prev.map((g) => {
+					if (g.courseId === course.id) {
+						return {
+							...g,
+							pendingStudents: [...g.pendingStudents, studentName],
+						};
+					}
+					return g;
+				});
+			} else if (!existingGroup) {
+				const newGroup = {
+					id: `g_${Date.now()}`,
+					name: `${course.title} Guruh`,
+					teacherName: course.teacherName,
+					courseTitle: course.title,
+					courseId: course.id,
+					studentsCount: 0,
+					students: [],
 					pendingStudents: [studentName],
 					courseDays: [],
 					courseTime: '',
@@ -181,7 +182,7 @@ export default function MockStore({
 
 	return (
 		<div
-			className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto bg-stone-50 min-h-screen text-gray-800"
+			className={`p-4 sm:p-6 space-y-6 max-w-7xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-[#0a0a1a] text-slate-100' : 'bg-stone-50 text-gray-800'}`}
 			id="mock_store_page"
 		>
 			{/* Page header and visual hero bar */}
@@ -212,31 +213,31 @@ export default function MockStore({
 			</div>
 
 			{/* Warnings & Success alerts */}
-			{statusMsg && (
-				<div
-					className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-black text-emerald-800 animate-fade-in flex items-center gap-2 shadow-xs"
-					id="store_success_alert"
-				>
-					<CheckCircle2 className="w-5 h-5 text-emerald-600" />
-					<span>{statusMsg}</span>
-				</div>
-			)}
+		{statusMsg && (
+			<div
+				className={`p-4 rounded-2xl text-xs font-black animate-fade-in flex items-center gap-2 shadow-xs ${isDarkMode ? 'bg-emerald-900/30 border border-emerald-700/40 text-emerald-300' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'}`}
+				id="store_success_alert"
+			>
+				<CheckCircle2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+				<span>{statusMsg}</span>
+			</div>
+		)}
 
-			{errorMsg && (
-				<div
-					className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-black text-rose-800 animate-fade-in flex items-center gap-2 shadow-xs"
-					id="store_error_alert"
-				>
-					<ShieldAlert className="w-5 h-5 text-rose-600" />
-					<span>{errorMsg}</span>
-				</div>
-			)}
+		{errorMsg && (
+			<div
+				className={`p-4 rounded-2xl text-xs font-black animate-fade-in flex items-center gap-2 shadow-xs ${isDarkMode ? 'bg-rose-900/30 border border-rose-700/40 text-rose-300' : 'bg-rose-50 border border-rose-200 text-rose-800'}`}
+				id="store_error_alert"
+			>
+				<ShieldAlert className={`w-5 h-5 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`} />
+				<span>{errorMsg}</span>
+			</div>
+		)}
 
 			{/* Main split grid layout */}
 			<div className="space-y-6" id="mock_grid">
 				<div className="space-y-6" id="mock_items_section">
 					<div className="flex justify-between items-center">
-						<h2 className="text-lg font-black uppercase tracking-wider text-gray-900">
+						<h2 className={`text-lg font-black uppercase tracking-wider ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
 							<ShoppingBag className="w-5 h-5 inline" /> Sotuvdagi Barcha
 							Kurslar ({courses.length})
 						</h2>
@@ -254,33 +255,33 @@ export default function MockStore({
 							return (
 								<div
 									key={course.id}
-									className="bg-white p-6 border border-gray-150 rounded-3xl space-y-4 shadow-xs transition-transform duration-200 hover:-translate-y-0.5 flex flex-col justify-between"
+									className={`p-6 rounded-3xl space-y-4 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col justify-between ${isDarkMode ? 'bg-[#151433] border border-slate-800 shadow-none' : 'bg-white border border-gray-150 shadow-xs'}`}
 								>
 									<div className="space-y-3">
 										<div className="flex justify-between items-start">
-											<span className="text-[10px] font-black px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full uppercase">
+											<span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase ${isDarkMode ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-50 text-emerald-700'}`}>
 												{course.category}
 											</span>
-											<div className="flex items-center gap-1 text-xs font-extrabold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-lg">
+											<div className={`flex items-center gap-1 text-xs font-extrabold text-amber-500 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
 												<Star className="w-3 h-3 inline fill-current" />{' '}
 												{course.rating}
 											</div>
 										</div>
 
-										<h3 className="text-base font-black text-gray-950 leading-snug">
+										<h3 className={`text-base font-black leading-snug ${isDarkMode ? 'text-white' : 'text-gray-950'}`}>
 											{course.title}
 										</h3>
-										<p className="text-xs text-gray-500 line-clamp-3">
+										<p className={`text-xs line-clamp-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
 											{course.description}
 										</p>
 
-										<div className="pt-2 divide-y divide-gray-100 text-xs text-gray-500">
+										<div className={`pt-2 divide-y text-xs ${isDarkMode ? 'divide-slate-800 text-slate-400' : 'divide-gray-100 text-gray-500'}`}>
 											<div className="py-2 flex justify-between">
 												<span>
 													<GraduationCap className="w-3.5 h-3.5 inline" />{' '}
 													Ustoz:
 												</span>
-												<strong className="text-gray-900">
+												<strong className={isDarkMode ? 'text-slate-200' : 'text-gray-900'}>
 													{course.teacherName}
 												</strong>
 											</div>
@@ -288,7 +289,7 @@ export default function MockStore({
 												<span>
 													<Clock className="w-3.5 h-3.5 inline" /> Davomiyligi:
 												</span>
-												<strong className="text-gray-900">
+												<strong className={isDarkMode ? 'text-slate-200' : 'text-gray-900'}>
 													{course.duration}
 												</strong>
 											</div>
@@ -296,25 +297,33 @@ export default function MockStore({
 												<span>
 													<Video className="w-3.5 h-3.5 inline" /> Darslar soni:
 												</span>
-												<strong className="text-gray-900">
+												<strong className={isDarkMode ? 'text-slate-200' : 'text-gray-900'}>
 													{course.lessonsCount} ta video dars
 												</strong>
 											</div>
 										</div>
 									</div>
 
-									<div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+									<div className={`pt-4 flex items-center justify-between gap-3 ${isDarkMode ? 'border-t border-slate-800' : 'border-t border-gray-100'}`}>
 										<div className="flex flex-col">
-											<span className="text-[10px] text-gray-400 font-bold uppercase">
+											<span className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
 												Kurs narxi:
 											</span>
-											<span className="text-lg font-black text-purple-600 font-mono flex items-center gap-1">
-												{course.priceCoins}
-											</span>
+											<div className="flex items-center gap-2">
+												{course.priceMoney ? (
+													<span className="text-lg font-black text-emerald-600 font-mono">
+														{course.priceMoney.toLocaleString()} so'm
+													</span>
+												) : (
+													<span className="text-lg font-black text-purple-600 font-mono flex items-center gap-1">
+														{course.priceCoins}
+													</span>
+												)}
+											</div>
 										</div>
 
 										{hasJoined ? (
-											<span className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-black uppercase flex items-center gap-1 border border-emerald-100">
+											<span className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase flex items-center gap-1 border ${isDarkMode ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/40' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
 												<Check className="w-4 h-4" /> Sotib olingan
 											</span>
 										) : (
@@ -333,6 +342,50 @@ export default function MockStore({
 				</div>
 
 			</div>
+
+			{/* Grant Modal */}
+			{showGrantModal && (
+				<div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50" onClick={() => setShowGrantModal(null)}>
+					<div className={`max-w-md w-full p-6 rounded-3xl shadow-2xl border space-y-5 ${isDarkMode ? 'bg-[#151433] border-slate-800' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
+						<div className="flex items-start justify-between">
+							<div className="flex items-center gap-3">
+								<img src={logoImg} alt="LifeSprint" className="w-14 h-14 rounded-2xl object-cover shadow-sm ring-2 ring-emerald-500/30" />
+								<div>
+									<h3 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>BEPUL Grant</h3>
+									<p className={`text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>LifeSprint simulyatsiya tizimi</p>
+								</div>
+							</div>
+							<button onClick={() => setShowGrantModal(null)} className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600'}`}>
+								<X className="w-4 h-4" />
+							</button>
+						</div>
+
+						<div className={`rounded-2xl p-4 border ${isDarkMode ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100'}`}>
+							<div className={`flex items-center gap-2 font-black text-xs uppercase tracking-wider mb-2 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+								<Sparkles className="w-4 h-4" /> Grant taklifi
+							</div>
+							<p className={`text-sm leading-relaxed font-medium ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>
+								Sizda tangalar yetarli emas! Lekin xavotirlanmang, <strong className="text-emerald-500">"LifeSprint" tizimi</strong> orqali 100% BEPUL Grant (Simulyatsiya) yordamida kursni faollashtirishni xohlaysizmi?
+							</p>
+						</div>
+
+						<div className="flex gap-3">
+							<button
+								onClick={() => setShowGrantModal(null)}
+								className={`flex-1 py-3 rounded-xl text-sm font-black transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'}`}
+							>
+								Yo'q
+							</button>
+							<button
+								onClick={handleGrantConfirm}
+								className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-black transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+							>
+								<Sparkles className="w-4 h-4" /> Ha, faollashtirish
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

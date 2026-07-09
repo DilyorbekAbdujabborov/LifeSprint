@@ -112,6 +112,13 @@ export function getAiRecommendations(context: string) {
   });
 }
 
+export function geminiAnalyze(prompt: string, systemInstruction?: string) {
+  return request<{ text: string }>('/api/gemini/analyze', {
+    method: 'POST',
+    body: JSON.stringify({ prompt, systemInstruction }),
+  });
+}
+
 export function createGroup(group: any) {
   return request<{ group: any; groups: any[] }>('/api/actions/create-group', {
     method: 'POST',

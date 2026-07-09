@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, useState } from 'react';
 import { HashRouter, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth';
 import { ToastProvider } from './toast';
@@ -10,21 +10,21 @@ import LevelModal from './components/LevelModal';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './components/Dashboard';
-import { Loader2 } from 'lucide-react';
+import PandooChat from './components/PandooChat';
+import { Loader2, MessageCircle, X } from 'lucide-react';
 
 const Discipline = lazy(() => import('./components/Discipline'));
 const Academics = lazy(() => import('./components/Academics'));
 const TestCenter = lazy(() => import('./components/TestCenter'));
 const UniversityFinder = lazy(() => import('./components/University'));
-const Portfolio = lazy(() => import('./components/Portfolio'));
 const Consulting = lazy(() => import('./components/Consulting'));
-const Community = lazy(() => import('./components/Community'));
-const AiCoach = lazy(() => import('./components/AiCoach'));
 const ParentPanel = lazy(() => import('./components/ParentPanel'));
-const Competition = lazy(() => import('./components/Competition'));
-const Analytics = lazy(() => import('./components/Analytics'));
 const MockStore = lazy(() => import('./components/MockStore'));
 const GameZone = lazy(() => import('./components/GameZone'));
+const StudentGroupsView = lazy(() => import('./components/StudentGroupsView'));
+const StudentTests = lazy(() => import('./components/StudentTests'));
+const EduBattle = lazy(() => import('./components/EduBattle'));
+const EduTeam = lazy(() => import('./components/EduTeam'));
 
 const LoaderScreen = ({ label }: { label: string }) => (
   <div className="flex min-h-screen items-center justify-center bg-[color:var(--bg)] text-[color:var(--text)]">
@@ -42,11 +42,13 @@ const PageLoader = () => (
 );
 
 const TAB_ID_TO_HASH: Record<string, string> = {
-  dashboard: '/', competition: 'competition', discipline: 'discipline',
+  dashboard: '/', discipline: 'discipline',
   academics: 'academics', testcenter: 'testcenter',
   mock_store: 'mock-store',
-  university: 'university', portfolio: 'portfolio', consulting: 'consulting',
-  ai: 'ai', community: 'community', panels: 'panels', analytics: 'analytics', gamezone: 'gamezone',
+  university: 'university', consulting: 'consulting',
+  gamezone: 'gamezone',
+  student_mygroups: 'my-groups', student_mytests: 'my-tests', student_myhomework: 'my-homework',
+  edu_battle: 'edu-battle', edu_team: 'edu-team',
 };
 
 const HASH_TO_TAB_ID: Record<string, string> = {};
@@ -67,6 +69,8 @@ function AppMain() {
     loadState, saveState,
   } = useStore();
 
+  const [pandooOpen, setPandooOpen] = useState(false);
+
   // Hash → Store (on mount & back/forward)
   const hashKey = location.pathname === '/' ? '/' : location.pathname.replace(/^\//, '');
   useEffect(() => {
@@ -82,7 +86,14 @@ function AppMain() {
     }
   }, [storeCurrentTab, navigate, location.pathname]);
 
-  useEffect(() => { loadState().then(() => { useStore.getState().saveState(); }); const n = setInterval(() => useStore.getState().saveState(), 30000); return () => clearInterval(n); }, []);
+  useEffect(() => {
+    loadState().then(() => {
+      useStore.getState().saveState();
+      useStore.getState().loadGameProfile();
+    });
+    const n = setInterval(() => useStore.getState().saveState(), 30000);
+    return () => clearInterval(n);
+  }, []);
   useEffect(() => { saveState(); }, [xp, level, coins, tasks, exams, habits, courses, groups, consultations, certificates, portfolio, posts, leaderboard, events, userRole]);
 
   const renderView = () => {
@@ -93,20 +104,146 @@ function AppMain() {
 
     switch (storeCurrentTab) {
       case 'dashboard': return <Dashboard tasks={tasks} setTasks={useStore.getState().setTasks} exams={exams} courses={courses} setCourses={useStore.getState().setCourses} groups={groups} setGroups={useStore.getState().setGroups} consultations={consultations} setConsultations={useStore.getState().setConsultations} certificates={certificates} setCertificates={useStore.getState().setCertificates} user={user} userRole={userRole} setCurrentTab={setCurrentTab} isDarkMode={isDarkMode} {...common} />;
-      case 'competition': return <Competition {...common} />;
       case 'discipline': return <Discipline habits={habits} setHabits={useStore.getState().setHabits} {...common} />;
       case 'academics': return <Academics courses={courses} setCourses={useStore.getState().setCourses} userRole={userRole} {...common} />;
       case 'testcenter': return <TestCenter {...common} />;
       case 'mock_store': return <MockStore courses={courses} setCourses={useStore.getState().setCourses} groups={groups} setGroups={useStore.getState().setGroups} userRole={userRole} {...common} />;
       case 'university': return <UniversityFinder />;
-      case 'portfolio': return <Portfolio portfolio={portfolio} setPortfolio={useStore.getState().setPortfolio} />;
       case 'consulting': return <Consulting />;
-      case 'ai': return <AiCoach {...common} />;
-      case 'community': return <Community posts={posts} setPosts={useStore.getState().setPosts} leaderboard={leaderboard} setLeaderboard={useStore.getState().setLeaderboard} events={events} {...common} />;
-      case 'panels': return <ParentPanel habits={habits} xp={xp} />;
-      case 'analytics': return <Analytics xp={xp} isDarkMode={isDarkMode} />;
       case 'gamezone':
         return <GameZone />;
+      case 'edu_battle':
+        return <EduBattle {...common} />;
+      case 'edu_team':
+        return <EduTeam {...common} />;
+      case 'student_mygroups': {
+        const studentName = user?.name || 'Biloliddin Akramov';
+        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
+        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
+        const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
+        if (!hasAnyActivity) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Guruhlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
+                <p className="text-base font-bold">Iltimos, avval dars sotib oling</p>
+                <p className="text-xs mt-2">Kurslar do'koniga o'ting va o'zingizga mos kursni xarid qiling</p>
+                <button onClick={() => navigate('/mock-store')} className="mt-4 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer">
+                  Kurslar do'koni
+                </button>
+              </div>
+            </div>
+          );
+        }
+        if (approvedGroups.length === 0 && pendingGroups.length > 0) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Guruhlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-amber-800/30 text-amber-400' : 'bg-white border-amber-200 text-amber-600'}`}>
+                <p className="text-base font-bold">Tasdiqlash kutilmoqda</p>
+                <p className="text-xs mt-2">Sizning xaridingiz o'qituvchi tomonidan tasdiqlanishi kutilmoqda. Bu biroz vaqt olishi mumkin.</p>
+              </div>
+            </div>
+          );
+        }
+        const triggerStatus = (msg: string) => {};
+        return <StudentGroupsView groups={groups} studentGroups={approvedGroups} xp={xp} coins={coins} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} triggerStatus={triggerStatus} isDarkMode={isDarkMode} />;
+      }
+      case 'student_mytests': {
+        const studentName = user?.name || 'Biloliddin Akramov';
+        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
+        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
+        const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
+        if (!hasAnyActivity) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Testlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
+                <p className="text-base font-bold">Iltimos, avval dars sotib oling</p>
+                <p className="text-xs mt-2">Kurslar do'koniga o'ting va o'zingizga mos kursni xarid qiling</p>
+                <button onClick={() => navigate('/mock-store')} className="mt-4 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer">
+                  Kurslar do'koni
+                </button>
+              </div>
+            </div>
+          );
+        }
+        if (approvedGroups.length === 0 && pendingGroups.length > 0) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Testlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-amber-800/30 text-amber-400' : 'bg-white border-amber-200 text-amber-600'}`}>
+                <p className="text-base font-bold">Tasdiqlash kutilmoqda</p>
+                <p className="text-xs mt-2">Sizning xaridingiz o'qituvchi tomonidan tasdiqlanishi kutilmoqda. Bu biroz vaqt olishi mumkin.</p>
+              </div>
+            </div>
+          );
+        }
+        return <StudentTests studentGroups={approvedGroups} setXp={useStore.getState().setXp} setCoins={useStore.getState().setCoins} setLevel={useStore.getState().setLevel} setGroups={useStore.getState().setGroups} activeGroupId={null} />;
+      }
+      case 'student_myhomework': {
+        const studentName = user?.name || 'Biloliddin Akramov';
+        const approvedGroups = groups.filter((g) => g.students.includes(studentName));
+        const pendingGroups = groups.filter((g) => g.pendingStudents?.includes(studentName) && !g.students.includes(studentName));
+        const hasAnyActivity = approvedGroups.length > 0 || pendingGroups.length > 0;
+        if (!hasAnyActivity) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
+                <p className="text-base font-bold">Iltimos, avval dars sotib oling</p>
+                <p className="text-xs mt-2">Kurslar do'koniga o'ting va o'zingizga mos kursni xarid qiling</p>
+                <button onClick={() => navigate('/mock-store')} className="mt-4 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 cursor-pointer">
+                  Kurslar do'koni
+                </button>
+              </div>
+            </div>
+          );
+        }
+        if (approvedGroups.length === 0 && pendingGroups.length > 0) {
+          return (
+            <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+              <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-amber-800/30 text-amber-400' : 'bg-white border-amber-200 text-amber-600'}`}>
+                <p className="text-base font-bold">Tasdiqlash kutilmoqda</p>
+                <p className="text-xs mt-2">Sizning xaridingiz o'qituvchi tomonidan tasdiqlanishi kutilmoqda. Bu biroz vaqt olishi mumkin.</p>
+              </div>
+            </div>
+          );
+        }
+        const allHomeworks = approvedGroups.flatMap((g) => g.homeworks.map((hw) => ({ ...hw, groupName: g.name })));
+        return (
+          <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5">
+            <h2 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Mening Topshiriqlarim</h2>
+            {allHomeworks.length === 0 ? (
+              <div className={`p-12 text-center rounded-3xl border border-dashed ${isDarkMode ? 'bg-[#151433] border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-500'}`}>
+                <p className="text-sm font-bold">Hali topshiriqlar yo'q</p>
+                <p className="text-xs mt-1">O'qituvchingiz topshiriq qo'shishini kuting</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allHomeworks.map((hw, idx) => (
+                  <div key={idx} className={`p-5 rounded-2xl border ${isDarkMode ? 'bg-[#151433] border-slate-800' : 'bg-white border-gray-200'} space-y-3`}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{hw.groupName}</span>
+                        <h3 className="text-sm font-bold text-white mt-1">{hw.title}</h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                      <span>Muddat: {hw.deadline || 'Belgilanmagan'}</span>
+                      <span>Holat: {hw.status === 'completed' ? 'Bajarilgan' : hw.status === 'pending' ? 'Kutilmoqda' : 'Yangi'}</span>
+                    </div>
+                    {hw.score !== undefined && (
+                      <div className="text-xs font-bold text-amber-400">Ball: {hw.score}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
       default: return null;
     }
   };
@@ -114,9 +251,9 @@ function AppMain() {
   return (
     <div className="app-shell relative flex h-screen overflow-hidden font-sans transition-colors duration-300">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-24 top-[-6rem] h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="absolute right-[-5rem] top-1/3 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
-        <div className="absolute bottom-[-5rem] left-1/3 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl" />
+        <div className="absolute -left-24 top-[-6rem] h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute right-[-5rem] top-1/3 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute bottom-[-5rem] left-1/3 h-64 w-64 rounded-full bg-fuchsia-400/10 blur-3xl" />
       </div>
       <Navigation
         currentTab={storeCurrentTab} setCurrentTab={setCurrentTab} userRole={userRole}
@@ -133,6 +270,36 @@ function AppMain() {
       </main>
       <LevelModal />
       <ConfirmDialog />
+
+      {/* Floating Pandoo AI Assistant */}
+      {pandooOpen && (
+        <div className="fixed inset-0 z-[200] flex items-end justify-end p-4 sm:p-6 pointer-events-none">
+          <div className="pointer-events-auto w-full max-w-md h-[80vh] sm:h-[600px] rounded-3xl overflow-hidden shadow-2xl border border-slate-700/50 bg-[#0f0f1a]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#1a1a2e] border-b border-slate-700/50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center text-xs font-black text-white">
+                  P
+                </div>
+                <span className="text-sm font-black text-white">Pandoo AI</span>
+              </div>
+              <button onClick={() => setPandooOpen(false)} className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white transition cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="h-[calc(100%-52px)]">
+              <PandooChat />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setPandooOpen(!pandooOpen)}
+        className="fixed bottom-5 right-5 z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-sky-600 text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        aria-label="Pandoo AI yordamchi"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
     </div>
   );
 }

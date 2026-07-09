@@ -165,6 +165,19 @@ router.post('/claim-quest', authMiddleware, async (req: AuthedRequest, res: Resp
   }
 });
 
+const COUNTER_TO_QUEST_EVENT: Record<string, string> = {
+  pomodorosDone: 'pomodoro',
+  aiChats: 'ai_chat',
+  lessonsFinished: 'lesson_finish',
+  quizzesPassed: 'quiz_pass',
+  testsPassed: 'test_pass',
+  habitsDone: 'habit_done',
+  postsCreated: 'post_create',
+  coursesCompleted: 'course_complete',
+  consultationsBooked: 'consultation',
+  groupsJoined: 'group_join',
+};
+
 // POST /api/game/earn
 router.post('/earn', authMiddleware, async (req: AuthedRequest, res: Response) => {
   try {
@@ -189,7 +202,8 @@ router.post('/earn', authMiddleware, async (req: AuthedRequest, res: Response) =
       state.questWeeklyXp = (state.questWeeklyXp || 0) + amount;
     }
 
-    const { updatedQuests } = updateQuestProgress(extractProfile(state), counterType, amount);
+    const questEventType = COUNTER_TO_QUEST_EVENT[counterType] || counterType;
+    const { updatedQuests } = updateQuestProgress(extractProfile(state), questEventType as any, amount);
     state.quests = updatedQuests;
 
     await saveState(req.userId!, state);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import * as api from '../api';
 import {
   Brain,
@@ -15,6 +15,11 @@ import {
   ArrowLeft,
   Target,
   Zap,
+  MessageSquare,
+  Send,
+  Bot,
+  User,
+  Loader2,
 } from 'lucide-react';
 
 interface WrongQuestion {
@@ -38,7 +43,12 @@ interface PandooProps {
   standalone?: boolean;
 }
 
-type Stage = 'topic_pick' | 'teach' | 'test' | 'result';
+type Stage = 'topic_pick' | 'teach' | 'test' | 'result' | 'ai_chat';
+
+interface ChatMessage {
+  role: 'user' | 'ai';
+  text: string;
+}
 
 interface QuizQuestion {
   q: string;
@@ -251,6 +261,14 @@ export default function Pandoo({
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<{ correct: number; total: number; pct: number; passed: boolean; earnedXp: number } | null>(null);
   const [wrongExplanations, setWrongExplanations] = useState<{ question: string; options: string[]; correct: number; userAnswer: number; explanation: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const topics = useMemo(() => {
     if (externalWrong && externalWrong.length > 0) {
@@ -355,6 +373,31 @@ export default function Pandoo({
     setWrongExplanations(wrongs);
   };
 
+  const PANDOO_SYSTEM_PROMPT = `Sen Pandoo nomli AI mentor. Sening vazifang o'quvchiga tushunmagan mavzularini sodda tilda tushuntirish va motivatsiya berish. Har doim o'zbek tilida gaplash. O'quvchining yoshiga qarab tushuntirish uslubini moslashtir. Savollarga javob berganda quyidagi strukturani ishlat: 1) Tushuncha, 2) Misol, 3) Eslab qolish uchun maslahat.`;
+
+  const openAiChat = () => {
+    setStage('ai_chat');
+    setChatMessages([{ role: 'ai', text: 'Salom! Men Pandoo, sening shaxsiy AI mentoring. Qaysi mavzuda yordam kerak? Har qanday savolni berishing mumkin!' }]);
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const msg = chatInput.trim();
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setChatLoading(true);
+
+    try {
+      const context = chatMessages.map(m => `${m.role === 'user' ? 'O\'quvchi' : 'Pandoo'}: ${m.text}`).join('\n');
+      const prompt = `${context}\nO'quvchi: ${msg}\nPandoo:`;
+      const res = await api.geminiAnalyze(prompt, PANDOO_SYSTEM_PROMPT);
+      setChatMessages(prev => [...prev, { role: 'ai', text: res.text || 'Kechirasiz, javob berishda xatolik yuz berdi.' }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'ai', text: 'Kechirasiz, hozir javob bera olmayman. Iltimos, keyinroq urinib koring.' }]);
+    }
+    setChatLoading(false);
+  };
+
   const handleRestart = () => {
     setStage('topic_pick');
     setTopic('');
@@ -449,6 +492,24 @@ export default function Pandoo({
                     <p className="text-xs font-bold text-white mt-1.5 leading-tight group-hover:text-emerald-300 transition-colors">{TOPIC_LABELS[k]}</p>
                   </button>
                 ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={openAiChat}
+                  className="w-full p-4 rounded-2xl bg-gradient-to-r from-emerald-600/20 to-teal-600/10 border border-emerald-500/30 text-left transition-all hover:from-emerald-600/30 hover:to-teal-600/20 cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/20">
+                      <MessageSquare className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">AI dan so'ra</p>
+                      <p className="text-[11px] text-slate-400">Mavzular ro'yxatida yo'qmi? Pandoo AI dan bevosita so'rang</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-emerald-400 ml-auto shrink-0" />
+                  </div>
+                </button>
               </div>
             </div>
           )}
@@ -623,6 +684,72 @@ export default function Pandoo({
                 </button>
                 <button onClick={handleFinish} className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl text-sm font-black transition-all cursor-pointer">
                   {standalone ? 'Boshqa mavzu' : 'Yopish'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* AI CHAT stage */}
+          {stage === 'ai_chat' && (
+            <div className="space-y-4 py-2 flex flex-col h-[500px]">
+              <div className="flex items-center gap-2 text-emerald-400">
+                <MessageSquare className="w-5 h-5" />
+                <h4 className="text-sm font-black text-white uppercase tracking-wide">AI bilan suhbat</h4>
+                <button
+                  onClick={() => { setStage('topic_pick'); setChatMessages([]); }}
+                  className="ml-auto text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  Mavzular
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-3 px-1">
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`p-2 rounded-xl shrink-0 ${msg.role === 'ai' ? 'bg-emerald-500/20' : 'bg-purple-500/20'}`}>
+                      {msg.role === 'ai' ? (
+                        <Bot className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <User className="w-4 h-4 text-purple-400" />
+                      )}
+                    </div>
+                    <div className={`max-w-[80%] rounded-2xl p-3 text-xs sm:text-sm leading-relaxed ${
+                      msg.role === 'ai'
+                        ? 'bg-slate-800/60 border border-slate-700/40 text-emerald-50'
+                        : 'bg-purple-500/20 border border-purple-500/30 text-white ml-auto'
+                    }`}>
+                      <p className="whitespace-pre-line">{msg.text}</p>
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="flex items-start gap-2.5">
+                    <div className="p-2 rounded-xl bg-emerald-500/20">
+                      <Bot className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl p-3">
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="flex gap-2 shrink-0">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
+                  placeholder="Savolingizni yozing..."
+                  className="flex-1 bg-slate-800/60 border border-slate-700/50 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 transition-all"
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={!chatInput.trim() || chatLoading}
+                  className="p-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 disabled:bg-slate-700 disabled:text-slate-500 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <Send className="w-5 h-5" />
                 </button>
               </div>
             </div>

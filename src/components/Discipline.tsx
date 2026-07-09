@@ -17,7 +17,9 @@ import {
   Droplets,
   Wind,
   Coffee,
-  BookOpen
+  BookOpen,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { Habit } from '../types';
 import { useToast } from '../toast';
@@ -28,13 +30,20 @@ interface DisciplineProps {
   xp: number;
   setXp: React.Dispatch<React.SetStateAction<number>>;
   setLevel: React.Dispatch<React.SetStateAction<number>>;
+  isDarkMode: boolean;
 }
 
-export default function Discipline({ habits, setHabits, xp, setXp, setLevel }: DisciplineProps) {
+export default function Discipline({ habits, setHabits, xp, setXp, setLevel, isDarkMode }: DisciplineProps) {
   const { toast } = useToast();
   // Widget switching and Fullscreen states
-  const [activeWidget, setActiveWidget] = useState<'focus' | 'analytics'>('focus');
+  const [activeWidget, setActiveWidget] = useState<'focus' | 'analytics' | 'attendance'>('focus');
   const [isFullscreenFocus, setIsFullscreenFocus] = useState(false);
+
+  // Clock In/Out (Yoqa olish)
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState<string | null>(null);
+  const [clockOutTime, setClockOutTime] = useState<string | null>(null);
+  const [attendanceHistory, setAttendanceHistory] = useState<{ date: string; in: string; out: string; hours: number }[]>([]);
 
   // Focus Timer States
   const [timeLeft, setTimeLeft] = useState(1500); // 25 minutes
@@ -515,6 +524,17 @@ export default function Discipline({ habits, setHabits, xp, setXp, setLevel }: D
             Fokus Time
           </button>
           <button
+            onClick={() => setActiveWidget('attendance')}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-wider uppercase transition-all duration-200 cursor-pointer border ${
+              activeWidget === 'attendance'
+                ? 'bg-emerald-700 border-emerald-700 text-white shadow-md'
+                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <LogIn className="w-4 h-4" />
+            Yoqa olish
+          </button>
+          <button
             onClick={() => setActiveWidget('analytics')}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-wider uppercase transition-all duration-200 cursor-pointer border ${
               activeWidget === 'analytics'
@@ -656,6 +676,88 @@ export default function Discipline({ habits, setHabits, xp, setXp, setLevel }: D
               </div>
             </div>
           </div>
+        </div>
+      ) : activeWidget === 'attendance' ? (
+        <div className="w-full bg-white dark:bg-[#151433] rounded-[2.2rem] p-6 sm:p-8 border border-gray-100 dark:border-slate-800 shadow-xl space-y-5" id="attendance_widget">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${isClockedIn ? 'bg-green-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                {isClockedIn ? <LogIn className="w-5 h-5 text-white" /> : <LogOut className="w-5 h-5 text-white" />}
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase">Yoqa olish</h3>
+                <p className={`text-[10px] ${isClockedIn ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
+                  {isClockedIn ? 'Ish vaqtidasiz' : 'Hali yoqa ochilmagan'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (!isClockedIn) {
+                  const now = new Date();
+                  setClockInTime(now.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }));
+                  setIsClockedIn(true);
+                } else {
+                  const now = new Date();
+                  const outTime = now.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+                  setClockOutTime(outTime);
+                  setIsClockedIn(false);
+                  if (clockInTime) {
+                    const [inH, inM] = clockInTime.split(':').map(Number);
+                    const [outH, outM] = outTime.split(':').map(Number);
+                    const hours = Math.round(((outH * 60 + outM) - (inH * 60 + inM)) / 60 * 10) / 10;
+                    setAttendanceHistory(prev => [...prev, {
+                      date: now.toLocaleDateString('uz-UZ'),
+                      in: clockInTime,
+                      out: outTime,
+                      hours: hours > 0 ? hours : 0,
+                    }]);
+                  }
+                }
+              }}
+              className={`px-6 py-3 rounded-2xl text-sm font-black text-white transition-all cursor-pointer ${
+                isClockedIn
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-emerald-600 hover:bg-emerald-700'
+              }`}
+            >
+              {isClockedIn ? 'Yoqani yopish' : 'Yoqa olish'}
+            </button>
+          </div>
+
+          {clockInTime && (
+            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-[#0f0f2a] border-slate-700' : 'bg-slate-50 border-slate-200'} space-y-2`}>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-400">Kirdi:</span>
+                <span className="font-bold text-gray-900 dark:text-white">{clockInTime}</span>
+              </div>
+              {clockOutTime && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Chiqdi:</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{clockOutTime}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {attendanceHistory.length > 0 && (
+            <div className={`rounded-2xl border ${isDarkMode ? 'border-slate-700' : 'border-slate-200'} overflow-hidden`}>
+              <div className={`px-4 py-2.5 ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'} border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Kunlik tarix</span>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {[...attendanceHistory].reverse().map((entry, idx) => (
+                  <div key={idx} className="px-4 py-2.5 flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-900 dark:text-white">{entry.date}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-400">{entry.in} → {entry.out}</span>
+                      <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">{entry.hours} soat</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div 

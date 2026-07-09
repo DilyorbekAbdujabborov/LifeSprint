@@ -79,18 +79,22 @@ export async function handleReward(
 
   switch (action) {
     case 'create_consultation':
+      state.consultationsBooked = (state.consultationsBooked || 0) + 1;
       result = ok(state, 10, 0);
       break;
 
     case 'complete_group_quiz':
+      state.quizzesPassed = (state.quizzesPassed || 0) + 1;
       result = ok(state, 50, 10);
       break;
 
     case 'complete_group_test':
+      state.testsPassed = (state.testsPassed || 0) + 1;
       result = ok(state, 100, 25);
       break;
 
     case 'finish_lesson':
+      state.lessonsFinished = (state.lessonsFinished || 0) + 1;
       result = ok(state, 30, 5);
       break;
 
@@ -99,6 +103,7 @@ export async function handleReward(
       break;
 
     case 'join_group':
+      state.groupsJoined = (state.groupsJoined || 0) + 1;
       result = ok(state, 50, 0);
       break;
 
@@ -133,6 +138,7 @@ export async function handleReward(
       if (pct < 50) {
         result = ok(state, Math.round(baseXp * 0.3), Math.round(baseCoins * 0.3));
       } else {
+        state.testsPassed = (state.testsPassed || 0) + 1;
         result = ok(state, baseXp, baseCoins);
       }
       break;
@@ -149,6 +155,7 @@ export async function handleReward(
       }
       const pct = total > 0 ? (correct / total) * 100 : 0;
       if (pct >= 70) {
+        state.testsPassed = (state.testsPassed || 0) + 1;
         result = ok(state, 300, 20);
       } else {
         result = ok(state, 100, 5);
@@ -157,14 +164,17 @@ export async function handleReward(
     }
 
     case 'pomodoro_complete':
+      state.pomodorosDone = (state.pomodorosDone || 0) + 1;
       result = ok(state, 150, 0);
       break;
 
     case 'habit_toggle_on':
+      state.habitsDone = (state.habitsDone || 0) + 1;
       result = ok(state, 15, 0);
       break;
 
     case 'habit_toggle_off':
+      state.habitsDone = Math.max(0, (state.habitsDone || 0) - 1);
       result = ok(state, -15, 0);
       break;
 
@@ -173,6 +183,7 @@ export async function handleReward(
       break;
 
     case 'create_post':
+      state.postsCreated = (state.postsCreated || 0) + 1;
       result = ok(state, 50, 0);
       break;
 
@@ -190,10 +201,12 @@ export async function handleReward(
     }
 
     case 'grant_enrollment':
+      state.coursesCompleted = (state.coursesCompleted || 0) + 1;
       result = ok(state, 100, 0);
       break;
 
     case 'ai_chat':
+      state.aiChats = (state.aiChats || 0) + 1;
       result = ok(state, 10, 0);
       break;
 

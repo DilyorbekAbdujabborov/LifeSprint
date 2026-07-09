@@ -1,4 +1,4 @@
-import { Sparkles, Flame, Trophy, Users, Calendar as CalendarIcon, Star, Play, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Flame, Trophy, Users, Calendar as CalendarIcon, Star, Play, CheckCircle2 } from 'lucide-react';
 import * as api from '../api';
 import type { Group, Course } from '../types';
 import type { AuthUser } from '../api';
@@ -26,10 +26,10 @@ export default function StudentOverview({
 
   return (
     <div className="space-y-6">
-      {/* Hero Banner - Gradient with multiple colors */}
-      <div className="relative bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 p-4 sm:p-8 rounded-3xl text-white shadow-lg overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-pink-400/20 blur-3xl" />
+      {/* Hero Banner - Indigo (ziyohrang) gradient */}
+      <div className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-4 sm:p-8 rounded-3xl text-white shadow-lg overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-indigo-400/20 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-fuchsia-400/20 blur-3xl" />
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-3">
             <div className="px-4 py-2 bg-white/20 backdrop-blur rounded-full text-white font-bold text-xs tracking-widest">🚀 AI TA'LIM 2.0</div>
@@ -56,10 +56,10 @@ export default function StudentOverview({
       {/* Stats row - Gradient Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { value: xp, label: "Umumiy XP", color: "from-purple-500 to-indigo-500", textColor: "text-purple-600 dark:text-purple-300", bgColor: "bg-purple-100 dark:bg-purple-950/40", icon: Trophy },
-          { value: coins, label: "Tangalar", color: "from-amber-500 to-orange-500", textColor: "text-amber-600 dark:text-amber-300", bgColor: "bg-amber-100 dark:bg-amber-950/40", icon: Sparkles },
-          { value: `${studentGroups.length}`, label: "Guruhlar", color: "from-emerald-500 to-teal-500", textColor: "text-emerald-600 dark:text-emerald-300", bgColor: "bg-emerald-100 dark:bg-emerald-950/40", icon: Users },
-          { value: level, label: "Streak (kun)", color: "from-rose-500 to-pink-500", textColor: "text-rose-600 dark:text-rose-300", bgColor: "bg-rose-100 dark:bg-rose-950/40", icon: Flame },
+          { value: xp, label: "Umumiy XP", color: "from-indigo-500 to-violet-600", icon: Trophy },
+          { value: coins, label: "Tangalar", color: "from-violet-500 to-purple-600", icon: Sparkles },
+          { value: `${studentGroups.length}`, label: "Guruhlar", color: "from-purple-500 to-fuchsia-600", icon: Users },
+          { value: level, label: "Streak (kun)", color: "from-fuchsia-500 to-pink-600", icon: Flame },
         ].map((stat) => (
           <div key={stat.label} className={`p-5 bg-gradient-to-br ${stat.color} rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 text-white relative overflow-hidden group`}>
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -183,35 +183,6 @@ export default function StudentOverview({
           </div>
         )}
       </div>
-
-      {/* Available groups */}
-      {groups.filter((g) => !g.students.includes(user?.name || 'Biloliddin Akramov') && !(g.pendingStudents || []).includes(user?.name || 'Biloliddin Akramov')).length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Boshqa ochiq darslar va guruhlar</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {groups.filter((g) => !g.students.includes(user?.name || 'Biloliddin Akramov') && !(g.pendingStudents || []).includes(user?.name || 'Biloliddin Akramov')).map((group) => (
-              <div key={group.id} className="p-6 bg-white dark:bg-[#151433] border border-gray-100 dark:border-slate-800 rounded-3xl space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-bold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-full uppercase">{group.courseTitle || 'Kurs'}</span>
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mt-2">{group.name}</h3>
-                  </div>
-                </div>
-                <div className="flex justify-between pt-2">
-                  <span className="text-xs text-gray-500">O'qituvchi: {group.teacherName}</span>
-                  <button onClick={() => {
-                    setGroups((prev) => prev.map((g) => g.id === group.id ? { ...g, pendingStudents: [...(g.pendingStudents || []), user?.name || 'Biloliddin Akramov'] } : g));
-                    api.rewardAndUpdate(setXp, null, setLevel, 'join_group');
-                    triggerStatus(`"${group.name}" guruhiga ulanish so'rovi yuborildi! O'qituvchi tasdiqlashini kuting. (+50 XP)`);
-                  }} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500" type="button">
-                    <PlusCircle className="w-4 h-4 inline mr-1" /> Guruhga ulanish
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* My Course Calendar */}
       {studentGroups.length > 0 && (

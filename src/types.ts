@@ -152,6 +152,7 @@ export interface Course {
   description: string;
   teacherName: string;
   priceCoins: number;
+  priceMoney?: number;
   enrolled: boolean;
   duration: string;
   lessonsCount: number;
@@ -318,6 +319,16 @@ export interface GameProfile {
   achievementsUnlocked: string[];
   totalQuestsCompleted: number;
   bestStreak: number;
+  pomodorosDone: number;
+  aiChats: number;
+  lessonsFinished: number;
+  quizzesPassed: number;
+  testsPassed: number;
+  habitsDone: number;
+  postsCreated: number;
+  coursesCompleted: number;
+  consultationsBooked: number;
+  groupsJoined: number;
   seasonPassLevel: number;
   seasonPassXp: number;
 }
